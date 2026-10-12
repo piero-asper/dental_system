@@ -1,0 +1,380 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum RolUsuario {
+  ADMINISTRADOR
+  ODONTOLOGO
+  RECEPCIONISTA
+}
+
+enum EstadoCita {
+  PROGRAMADA
+  CONFIRMADA
+  ATENDIDA
+  CANCELADA
+  NO_ASISTIO
+}
+
+enum EstadoPresupuesto {
+  BORRADOR
+  ENVIADO
+  ACEPTADO
+  RECHAZADO
+  FINALIZADO
+}
+
+enum MetodoPago {
+  EFECTIVO
+  TARJETA
+  TRANSFERENCIA
+  OTRO
+}
+
+enum EstadoPago {
+  REGISTRADO
+  ANULADO
+}
+
+enum TipoComprobante {
+  RECIBO
+  FACTURA
+}
+
+enum EstadoComprobante {
+  EMITIDO
+  ANULADO
+}
+
+enum TipoMovimientoCaja {
+  INGRESO
+  EGRESO
+  AJUSTE
+}
+
+enum TipoMovimientoInventario {
+  ENTRADA
+  SALIDA
+  AJUSTE
+}
+
+model Profile {
+  id         String     @id @default(uuid()) @db.Uuid
+  authUserId String     @unique @map("auth_user_id") @db.Uuid
+  email      String     @unique
+  nombre     String
+  apellido   String
+  telefono   String?
+  rol        RolUsuario
+  activo     Boolean    @default(true)
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  citasComoOdontologo Cita[]                 @relation("CitaOdontologo")
+  citasCreadas        Cita[]                 @relation("CitaCreatedBy")
+  citasActualizadas   Cita[]                 @relation("CitaUpdatedBy")
+  historiasCreadas    HistoriaClinica[]      @relation("HistoriaCreatedBy")
+  historiasActualizadas HistoriaClinica[]    @relation("HistoriaUpdatedBy")
+  evoluciones         EvolucionClinica[]     @relation("EvolucionOdontologo")
+  odontogramaCreado   OdontogramaPieza[]     @relation("OdontogramaCreatedBy")
+  odontogramaActualizado OdontogramaPieza[]  @relation("OdontogramaUpdatedBy")
+  auditorias          AuditoriaHistoriaClinica[]
+  presupuestos        Presupuesto[]          @relation("PresupuestoOdontologo")
+  pagosCreados        Pago[]                 @relation("PagoCreatedBy")
+  cajaMovimientos     CajaMovimiento[]       @relation("CajaCreatedBy")
+  inventarioMovimientos InventarioMovimiento[] @relation("InventarioCreatedBy")
+
+  @@map("profiles")
+}
+
+model Paciente {
+  id                         String    @id @default(uuid()) @db.Uuid
+  tipoDocumento              String    @map("tipo_documento")
+  numeroDocumento            String?   @map("numero_documento")
+  nombres                    String
+  apellidos                  String
+  fechaNacimiento            DateTime? @map("fecha_nacimiento") @db.Date
+  sexo                       String?
+  telefono                   String?
+  email                      String?
+  direccion                  String?
+  contactoEmergenciaNombre   String?   @map("contacto_emergencia_nombre")
+  contactoEmergenciaTelefono String?   @map("contacto_emergencia_telefono")
+  activo                     Boolean   @default(true)
+  createdAt                  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt                  DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  citas            Cita[]
+  historiaClinica  HistoriaClinica?
+  presupuestos     Presupuesto[]
+  pagos            Pago[]
+  comprobantes     Comprobante[]
+
+  @@unique([tipoDocumento, numeroDocumento])
+  @@map("pacientes")
+}
+
+model Cita {
+  id                 String     @id @default(uuid()) @db.Uuid
+  pacienteId         String     @map("paciente_id") @db.Uuid
+  odontologoId       String     @map("odontologo_id") @db.Uuid
+  fechaInicio        DateTime   @map("fecha_inicio") @db.Timestamptz(6)
+  fechaFin           DateTime   @map("fecha_fin") @db.Timestamptz(6)
+  estado             EstadoCita @default(PROGRAMADA)
+  motivo             String?
+  notas              String?
+  motivoCancelacion  String?    @map("motivo_cancelacion")
+  createdById        String?    @map("created_by") @db.Uuid
+  updatedById        String?    @map("updated_by") @db.Uuid
+  createdAt          DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt          DateTime?  @map("deleted_at") @db.Timestamptz(6)
+
+  paciente    Paciente @relation(fields: [pacienteId], references: [id])
+  odontologo  Profile  @relation("CitaOdontologo", fields: [odontologoId], references: [id])
+  createdBy   Profile? @relation("CitaCreatedBy", fields: [createdById], references: [id])
+  updatedBy   Profile? @relation("CitaUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([pacienteId])
+  @@index([odontologoId, fechaInicio, fechaFin])
+  @@map("citas")
+}
+
+model HistoriaClinica {
+  id                   String   @id @default(uuid()) @db.Uuid
+  pacienteId           String   @unique @map("paciente_id") @db.Uuid
+  antecedentesMedicos  String?  @map("antecedentes_medicos")
+  alergias             String?
+  medicamentos         String?
+  observaciones        String?
+  createdById          String?  @map("created_by") @db.Uuid
+  updatedById          String?  @map("updated_by") @db.Uuid
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  paciente     Paciente @relation(fields: [pacienteId], references: [id])
+  createdBy    Profile? @relation("HistoriaCreatedBy", fields: [createdById], references: [id])
+  updatedBy    Profile? @relation("HistoriaUpdatedBy", fields: [updatedById], references: [id])
+  evoluciones  EvolucionClinica[]
+  odontograma  OdontogramaPieza[]
+  auditorias   AuditoriaHistoriaClinica[]
+
+  @@map("historias_clinicas")
+}
+
+model EvolucionClinica {
+  id                String   @id @default(uuid()) @db.Uuid
+  historiaClinicaId String   @map("historia_clinica_id") @db.Uuid
+  odontologoId      String   @map("odontologo_id") @db.Uuid
+  fecha             DateTime @default(now()) @db.Timestamptz(6)
+  diagnostico       String?
+  procedimiento     String?
+  observaciones     String?
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  historiaClinica HistoriaClinica @relation(fields: [historiaClinicaId], references: [id])
+  odontologo      Profile         @relation("EvolucionOdontologo", fields: [odontologoId], references: [id])
+
+  @@index([historiaClinicaId])
+  @@map("evoluciones_clinicas")
+}
+
+model OdontogramaPieza {
+  id                String   @id @default(uuid()) @db.Uuid
+  historiaClinicaId String   @map("historia_clinica_id") @db.Uuid
+  pieza             String
+  superficie        String?
+  estado            String
+  observaciones     String?
+  createdById       String?  @map("created_by") @db.Uuid
+  updatedById       String?  @map("updated_by") @db.Uuid
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  historiaClinica HistoriaClinica @relation(fields: [historiaClinicaId], references: [id])
+  createdBy       Profile?        @relation("OdontogramaCreatedBy", fields: [createdById], references: [id])
+  updatedBy       Profile?        @relation("OdontogramaUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([historiaClinicaId])
+  @@map("odontograma_piezas")
+}
+
+model AuditoriaHistoriaClinica {
+  id                String   @id @default(uuid()) @db.Uuid
+  historiaClinicaId String   @map("historia_clinica_id") @db.Uuid
+  actorId           String   @map("actor_id") @db.Uuid
+  accion            String
+  tablaAfectada     String   @map("tabla_afectada")
+  registroId        String   @map("registro_id") @db.Uuid
+  valorAnterior     Json?    @map("valor_anterior")
+  valorNuevo        Json?    @map("valor_nuevo")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  historiaClinica HistoriaClinica @relation(fields: [historiaClinicaId], references: [id])
+  actor            Profile         @relation(fields: [actorId], references: [id])
+
+  @@index([historiaClinicaId])
+  @@map("auditoria_historias_clinicas")
+}
+
+model Tratamiento {
+  id          String   @id @default(uuid()) @db.Uuid
+  codigo      String   @unique
+  nombre      String
+  descripcion String?
+  precioBase  Decimal  @map("precio_base") @db.Decimal(12, 2)
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  presupuestoItems PresupuestoItem[]
+
+  @@map("tratamientos")
+}
+
+model Presupuesto {
+  id            String             @id @default(uuid()) @db.Uuid
+  pacienteId    String             @map("paciente_id") @db.Uuid
+  odontologoId  String             @map("odontologo_id") @db.Uuid
+  estado        EstadoPresupuesto  @default(BORRADOR)
+  subtotal      Decimal            @default(0) @db.Decimal(12, 2)
+  descuento     Decimal            @default(0) @db.Decimal(12, 2)
+  total         Decimal            @default(0) @db.Decimal(12, 2)
+  observaciones String?
+  createdAt     DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt     DateTime?          @map("deleted_at") @db.Timestamptz(6)
+
+  paciente   Paciente @relation(fields: [pacienteId], references: [id])
+  odontologo Profile  @relation("PresupuestoOdontologo", fields: [odontologoId], references: [id])
+  items      PresupuestoItem[]
+  pagos      Pago[]
+
+  @@index([pacienteId])
+  @@map("presupuestos")
+}
+
+model PresupuestoItem {
+  id             String   @id @default(uuid()) @db.Uuid
+  presupuestoId  String   @map("presupuesto_id") @db.Uuid
+  tratamientoId  String   @map("tratamiento_id") @db.Uuid
+  cantidad       Int      @default(1)
+  precioUnitario Decimal  @map("precio_unitario") @db.Decimal(12, 2)
+  subtotal       Decimal  @db.Decimal(12, 2)
+  pieza          String?
+  observaciones  String?
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  presupuesto Presupuesto @relation(fields: [presupuestoId], references: [id])
+  tratamiento Tratamiento @relation(fields: [tratamientoId], references: [id])
+
+  @@index([presupuestoId])
+  @@map("presupuesto_items")
+}
+
+model Pago {
+  id            String      @id @default(uuid()) @db.Uuid
+  pacienteId    String      @map("paciente_id") @db.Uuid
+  presupuestoId String?     @map("presupuesto_id") @db.Uuid
+  monto         Decimal     @db.Decimal(12, 2)
+  metodoPago    MetodoPago  @map("metodo_pago")
+  estado        EstadoPago  @default(REGISTRADO)
+  fechaPago     DateTime    @default(now()) @map("fecha_pago") @db.Timestamptz(6)
+  referencia    String?
+  observaciones String?
+  createdById   String?     @map("created_by") @db.Uuid
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  paciente     Paciente      @relation(fields: [pacienteId], references: [id])
+  presupuesto  Presupuesto?  @relation(fields: [presupuestoId], references: [id])
+  createdBy    Profile?      @relation("PagoCreatedBy", fields: [createdById], references: [id])
+  comprobante  Comprobante?
+  cajaMovimientos CajaMovimiento[]
+
+  @@index([pacienteId])
+  @@map("pagos")
+}
+
+model Comprobante {
+  id           String             @id @default(uuid()) @db.Uuid
+  pagoId       String             @unique @map("pago_id") @db.Uuid
+  pacienteId   String             @map("paciente_id") @db.Uuid
+  numero       String             @unique
+  tipo         TipoComprobante
+  estado       EstadoComprobante  @default(EMITIDO)
+  fechaEmision DateTime           @default(now()) @map("fecha_emision") @db.Timestamptz(6)
+  montoTotal   Decimal            @map("monto_total") @db.Decimal(12, 2)
+  archivoUrl   String?            @map("archivo_url")
+  createdAt    DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  pago     Pago     @relation(fields: [pagoId], references: [id])
+  paciente Paciente @relation(fields: [pacienteId], references: [id])
+
+  @@map("comprobantes")
+}
+
+model CajaMovimiento {
+  id          String              @id @default(uuid()) @db.Uuid
+  tipo        TipoMovimientoCaja
+  monto       Decimal             @db.Decimal(12, 2)
+  metodoPago  MetodoPago?         @map("metodo_pago")
+  pagoId      String?             @map("pago_id") @db.Uuid
+  descripcion String?
+  createdById String?             @map("created_by") @db.Uuid
+  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  pago      Pago?    @relation(fields: [pagoId], references: [id])
+  createdBy Profile? @relation("CajaCreatedBy", fields: [createdById], references: [id])
+
+  @@index([createdAt])
+  @@map("caja_movimientos")
+}
+
+model Insumo {
+  id           String   @id @default(uuid()) @db.Uuid
+  codigo       String   @unique
+  nombre       String
+  descripcion  String?
+  unidadMedida String   @map("unidad_medida")
+  stockActual  Decimal  @default(0) @map("stock_actual") @db.Decimal(12, 2)
+  stockMinimo  Decimal  @default(0) @map("stock_minimo") @db.Decimal(12, 2)
+  activo       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  movimientos InventarioMovimiento[]
+
+  @@map("insumos")
+}
+
+model InventarioMovimiento {
+  id            String                   @id @default(uuid()) @db.Uuid
+  insumoId      String                   @map("insumo_id") @db.Uuid
+  tipo          TipoMovimientoInventario
+  cantidad      Decimal                  @db.Decimal(12, 2)
+  stockAnterior Decimal                  @map("stock_anterior") @db.Decimal(12, 2)
+  stockNuevo    Decimal                  @map("stock_nuevo") @db.Decimal(12, 2)
+  motivo        String?
+  createdById   String?                  @map("created_by") @db.Uuid
+  createdAt     DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  insumo    Insumo   @relation(fields: [insumoId], references: [id])
+  createdBy Profile? @relation("InventarioCreatedBy", fields: [createdById], references: [id])
+
+  @@index([insumoId])
+  @@map("inventario_movimientos")
+}
+
