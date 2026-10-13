@@ -1,7 +1,4 @@
 -- CreateEnum
-CREATE TYPE "RolUsuario" AS ENUM ('ADMINISTRADOR', 'ODONTOLOGO', 'RECEPCIONISTA');
-
--- CreateEnum
 CREATE TYPE "EstadoCita" AS ENUM ('PROGRAMADA', 'CONFIRMADA', 'ATENDIDA', 'CANCELADA', 'NO_ASISTIO');
 
 -- CreateEnum
@@ -24,22 +21,6 @@ CREATE TYPE "TipoMovimientoCaja" AS ENUM ('INGRESO', 'EGRESO', 'AJUSTE');
 
 -- CreateEnum
 CREATE TYPE "TipoMovimientoInventario" AS ENUM ('ENTRADA', 'SALIDA', 'AJUSTE');
-
--- CreateTable
-CREATE TABLE "profiles" (
-    "id" UUID NOT NULL,
-    "auth_user_id" UUID NOT NULL,
-    "email" TEXT NOT NULL,
-    "nombre" TEXT NOT NULL,
-    "apellido" TEXT NOT NULL,
-    "telefono" TEXT,
-    "rol" "RolUsuario" NOT NULL,
-    "activo" BOOLEAN NOT NULL DEFAULT true,
-    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ(6) NOT NULL,
-
-    CONSTRAINT "profiles_pkey" PRIMARY KEY ("id")
-);
 
 -- CreateTable
 CREATE TABLE "pacientes" (
@@ -67,15 +48,12 @@ CREATE TABLE "pacientes" (
 CREATE TABLE "citas" (
     "id" UUID NOT NULL,
     "paciente_id" UUID NOT NULL,
-    "odontologo_id" UUID NOT NULL,
     "fecha_inicio" TIMESTAMPTZ(6) NOT NULL,
     "fecha_fin" TIMESTAMPTZ(6) NOT NULL,
     "estado" "EstadoCita" NOT NULL DEFAULT 'PROGRAMADA',
     "motivo" TEXT,
     "notas" TEXT,
     "motivo_cancelacion" TEXT,
-    "created_by" UUID,
-    "updated_by" UUID,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL,
     "deleted_at" TIMESTAMPTZ(6),
@@ -91,8 +69,6 @@ CREATE TABLE "historias_clinicas" (
     "alergias" TEXT,
     "medicamentos" TEXT,
     "observaciones" TEXT,
-    "created_by" UUID,
-    "updated_by" UUID,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL,
 
@@ -103,7 +79,6 @@ CREATE TABLE "historias_clinicas" (
 CREATE TABLE "evoluciones_clinicas" (
     "id" UUID NOT NULL,
     "historia_clinica_id" UUID NOT NULL,
-    "odontologo_id" UUID NOT NULL,
     "fecha" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "diagnostico" TEXT,
     "procedimiento" TEXT,
@@ -122,8 +97,6 @@ CREATE TABLE "odontograma_piezas" (
     "superficie" TEXT,
     "estado" TEXT NOT NULL,
     "observaciones" TEXT,
-    "created_by" UUID,
-    "updated_by" UUID,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL,
 
@@ -134,7 +107,6 @@ CREATE TABLE "odontograma_piezas" (
 CREATE TABLE "auditoria_historias_clinicas" (
     "id" UUID NOT NULL,
     "historia_clinica_id" UUID NOT NULL,
-    "actor_id" UUID NOT NULL,
     "accion" TEXT NOT NULL,
     "tabla_afectada" TEXT NOT NULL,
     "registro_id" UUID NOT NULL,
@@ -164,7 +136,6 @@ CREATE TABLE "tratamientos" (
 CREATE TABLE "presupuestos" (
     "id" UUID NOT NULL,
     "paciente_id" UUID NOT NULL,
-    "odontologo_id" UUID NOT NULL,
     "estado" "EstadoPresupuesto" NOT NULL DEFAULT 'BORRADOR',
     "subtotal" DECIMAL(12,2) NOT NULL DEFAULT 0,
     "descuento" DECIMAL(12,2) NOT NULL DEFAULT 0,
@@ -204,7 +175,6 @@ CREATE TABLE "pagos" (
     "fecha_pago" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "referencia" TEXT,
     "observaciones" TEXT,
-    "created_by" UUID,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL,
 
@@ -236,7 +206,6 @@ CREATE TABLE "caja_movimientos" (
     "metodo_pago" "MetodoPago",
     "pago_id" UUID,
     "descripcion" TEXT,
-    "created_by" UUID,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "caja_movimientos_pkey" PRIMARY KEY ("id")
@@ -268,17 +237,10 @@ CREATE TABLE "inventario_movimientos" (
     "stock_anterior" DECIMAL(12,2) NOT NULL,
     "stock_nuevo" DECIMAL(12,2) NOT NULL,
     "motivo" TEXT,
-    "created_by" UUID,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "inventario_movimientos_pkey" PRIMARY KEY ("id")
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "profiles_auth_user_id_key" ON "profiles"("auth_user_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "profiles_email_key" ON "profiles"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "pacientes_tipo_documento_numero_documento_key" ON "pacientes"("tipo_documento", "numero_documento");
@@ -287,7 +249,7 @@ CREATE UNIQUE INDEX "pacientes_tipo_documento_numero_documento_key" ON "paciente
 CREATE INDEX "citas_paciente_id_idx" ON "citas"("paciente_id");
 
 -- CreateIndex
-CREATE INDEX "citas_odontologo_id_fecha_inicio_fecha_fin_idx" ON "citas"("odontologo_id", "fecha_inicio", "fecha_fin");
+CREATE INDEX "citas_fecha_inicio_fecha_fin_idx" ON "citas"("fecha_inicio", "fecha_fin");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "historias_clinicas_paciente_id_key" ON "historias_clinicas"("paciente_id");
@@ -332,49 +294,19 @@ CREATE INDEX "inventario_movimientos_insumo_id_idx" ON "inventario_movimientos"(
 ALTER TABLE "citas" ADD CONSTRAINT "citas_paciente_id_fkey" FOREIGN KEY ("paciente_id") REFERENCES "pacientes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "citas" ADD CONSTRAINT "citas_odontologo_id_fkey" FOREIGN KEY ("odontologo_id") REFERENCES "profiles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "citas" ADD CONSTRAINT "citas_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "profiles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "citas" ADD CONSTRAINT "citas_updated_by_fkey" FOREIGN KEY ("updated_by") REFERENCES "profiles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "historias_clinicas" ADD CONSTRAINT "historias_clinicas_paciente_id_fkey" FOREIGN KEY ("paciente_id") REFERENCES "pacientes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "historias_clinicas" ADD CONSTRAINT "historias_clinicas_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "profiles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "historias_clinicas" ADD CONSTRAINT "historias_clinicas_updated_by_fkey" FOREIGN KEY ("updated_by") REFERENCES "profiles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "evoluciones_clinicas" ADD CONSTRAINT "evoluciones_clinicas_historia_clinica_id_fkey" FOREIGN KEY ("historia_clinica_id") REFERENCES "historias_clinicas"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "evoluciones_clinicas" ADD CONSTRAINT "evoluciones_clinicas_odontologo_id_fkey" FOREIGN KEY ("odontologo_id") REFERENCES "profiles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "odontograma_piezas" ADD CONSTRAINT "odontograma_piezas_historia_clinica_id_fkey" FOREIGN KEY ("historia_clinica_id") REFERENCES "historias_clinicas"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "odontograma_piezas" ADD CONSTRAINT "odontograma_piezas_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "profiles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "odontograma_piezas" ADD CONSTRAINT "odontograma_piezas_updated_by_fkey" FOREIGN KEY ("updated_by") REFERENCES "profiles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "auditoria_historias_clinicas" ADD CONSTRAINT "auditoria_historias_clinicas_historia_clinica_id_fkey" FOREIGN KEY ("historia_clinica_id") REFERENCES "historias_clinicas"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "auditoria_historias_clinicas" ADD CONSTRAINT "auditoria_historias_clinicas_actor_id_fkey" FOREIGN KEY ("actor_id") REFERENCES "profiles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "presupuestos" ADD CONSTRAINT "presupuestos_paciente_id_fkey" FOREIGN KEY ("paciente_id") REFERENCES "pacientes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "presupuestos" ADD CONSTRAINT "presupuestos_odontologo_id_fkey" FOREIGN KEY ("odontologo_id") REFERENCES "profiles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "presupuesto_items" ADD CONSTRAINT "presupuesto_items_presupuesto_id_fkey" FOREIGN KEY ("presupuesto_id") REFERENCES "presupuestos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -389,9 +321,6 @@ ALTER TABLE "pagos" ADD CONSTRAINT "pagos_paciente_id_fkey" FOREIGN KEY ("pacien
 ALTER TABLE "pagos" ADD CONSTRAINT "pagos_presupuesto_id_fkey" FOREIGN KEY ("presupuesto_id") REFERENCES "presupuestos"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "pagos" ADD CONSTRAINT "pagos_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "profiles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "comprobantes" ADD CONSTRAINT "comprobantes_pago_id_fkey" FOREIGN KEY ("pago_id") REFERENCES "pagos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -401,10 +330,4 @@ ALTER TABLE "comprobantes" ADD CONSTRAINT "comprobantes_paciente_id_fkey" FOREIG
 ALTER TABLE "caja_movimientos" ADD CONSTRAINT "caja_movimientos_pago_id_fkey" FOREIGN KEY ("pago_id") REFERENCES "pagos"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "caja_movimientos" ADD CONSTRAINT "caja_movimientos_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "profiles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "inventario_movimientos" ADD CONSTRAINT "inventario_movimientos_insumo_id_fkey" FOREIGN KEY ("insumo_id") REFERENCES "insumos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "inventario_movimientos" ADD CONSTRAINT "inventario_movimientos_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "profiles"("id") ON DELETE SET NULL ON UPDATE CASCADE;

@@ -8,12 +8,6 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-enum RolUsuario {
-  ADMINISTRADOR
-  ODONTOLOGO
-  RECEPCIONISTA
-}
-
 enum EstadoCita {
   PROGRAMADA
   CONFIRMADA
@@ -64,35 +58,6 @@ enum TipoMovimientoInventario {
   AJUSTE
 }
 
-model Profile {
-  id         String     @id @default(uuid()) @db.Uuid
-  authUserId String     @unique @map("auth_user_id") @db.Uuid
-  email      String     @unique
-  nombre     String
-  apellido   String
-  telefono   String?
-  rol        RolUsuario
-  activo     Boolean    @default(true)
-  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  citasComoOdontologo Cita[]                 @relation("CitaOdontologo")
-  citasCreadas        Cita[]                 @relation("CitaCreatedBy")
-  citasActualizadas   Cita[]                 @relation("CitaUpdatedBy")
-  historiasCreadas    HistoriaClinica[]      @relation("HistoriaCreatedBy")
-  historiasActualizadas HistoriaClinica[]    @relation("HistoriaUpdatedBy")
-  evoluciones         EvolucionClinica[]     @relation("EvolucionOdontologo")
-  odontogramaCreado   OdontogramaPieza[]     @relation("OdontogramaCreatedBy")
-  odontogramaActualizado OdontogramaPieza[]  @relation("OdontogramaUpdatedBy")
-  auditorias          AuditoriaHistoriaClinica[]
-  presupuestos        Presupuesto[]          @relation("PresupuestoOdontologo")
-  pagosCreados        Pago[]                 @relation("PagoCreatedBy")
-  cajaMovimientos     CajaMovimiento[]       @relation("CajaCreatedBy")
-  inventarioMovimientos InventarioMovimiento[] @relation("InventarioCreatedBy")
-
-  @@map("profiles")
-}
-
 model Paciente {
   id                         String    @id @default(uuid()) @db.Uuid
   tipoDocumento              String    @map("tipo_documento")
@@ -124,26 +89,20 @@ model Paciente {
 model Cita {
   id                 String     @id @default(uuid()) @db.Uuid
   pacienteId         String     @map("paciente_id") @db.Uuid
-  odontologoId       String     @map("odontologo_id") @db.Uuid
   fechaInicio        DateTime   @map("fecha_inicio") @db.Timestamptz(6)
   fechaFin           DateTime   @map("fecha_fin") @db.Timestamptz(6)
   estado             EstadoCita @default(PROGRAMADA)
   motivo             String?
   notas              String?
   motivoCancelacion  String?    @map("motivo_cancelacion")
-  createdById        String?    @map("created_by") @db.Uuid
-  updatedById        String?    @map("updated_by") @db.Uuid
   createdAt          DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt          DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt          DateTime?  @map("deleted_at") @db.Timestamptz(6)
 
   paciente    Paciente @relation(fields: [pacienteId], references: [id])
-  odontologo  Profile  @relation("CitaOdontologo", fields: [odontologoId], references: [id])
-  createdBy   Profile? @relation("CitaCreatedBy", fields: [createdById], references: [id])
-  updatedBy   Profile? @relation("CitaUpdatedBy", fields: [updatedById], references: [id])
 
   @@index([pacienteId])
-  @@index([odontologoId, fechaInicio, fechaFin])
+  @@index([fechaInicio, fechaFin])
   @@map("citas")
 }
 
@@ -154,14 +113,10 @@ model HistoriaClinica {
   alergias             String?
   medicamentos         String?
   observaciones        String?
-  createdById          String?  @map("created_by") @db.Uuid
-  updatedById          String?  @map("updated_by") @db.Uuid
   createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   paciente     Paciente @relation(fields: [pacienteId], references: [id])
-  createdBy    Profile? @relation("HistoriaCreatedBy", fields: [createdById], references: [id])
-  updatedBy    Profile? @relation("HistoriaUpdatedBy", fields: [updatedById], references: [id])
   evoluciones  EvolucionClinica[]
   odontograma  OdontogramaPieza[]
   auditorias   AuditoriaHistoriaClinica[]
@@ -172,7 +127,6 @@ model HistoriaClinica {
 model EvolucionClinica {
   id                String   @id @default(uuid()) @db.Uuid
   historiaClinicaId String   @map("historia_clinica_id") @db.Uuid
-  odontologoId      String   @map("odontologo_id") @db.Uuid
   fecha             DateTime @default(now()) @db.Timestamptz(6)
   diagnostico       String?
   procedimiento     String?
@@ -181,7 +135,6 @@ model EvolucionClinica {
   updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   historiaClinica HistoriaClinica @relation(fields: [historiaClinicaId], references: [id])
-  odontologo      Profile         @relation("EvolucionOdontologo", fields: [odontologoId], references: [id])
 
   @@index([historiaClinicaId])
   @@map("evoluciones_clinicas")
@@ -194,14 +147,10 @@ model OdontogramaPieza {
   superficie        String?
   estado            String
   observaciones     String?
-  createdById       String?  @map("created_by") @db.Uuid
-  updatedById       String?  @map("updated_by") @db.Uuid
   createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   historiaClinica HistoriaClinica @relation(fields: [historiaClinicaId], references: [id])
-  createdBy       Profile?        @relation("OdontogramaCreatedBy", fields: [createdById], references: [id])
-  updatedBy       Profile?        @relation("OdontogramaUpdatedBy", fields: [updatedById], references: [id])
 
   @@index([historiaClinicaId])
   @@map("odontograma_piezas")
@@ -210,7 +159,6 @@ model OdontogramaPieza {
 model AuditoriaHistoriaClinica {
   id                String   @id @default(uuid()) @db.Uuid
   historiaClinicaId String   @map("historia_clinica_id") @db.Uuid
-  actorId           String   @map("actor_id") @db.Uuid
   accion            String
   tablaAfectada     String   @map("tabla_afectada")
   registroId        String   @map("registro_id") @db.Uuid
@@ -219,7 +167,6 @@ model AuditoriaHistoriaClinica {
   createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   historiaClinica HistoriaClinica @relation(fields: [historiaClinicaId], references: [id])
-  actor            Profile         @relation(fields: [actorId], references: [id])
 
   @@index([historiaClinicaId])
   @@map("auditoria_historias_clinicas")
@@ -244,7 +191,6 @@ model Tratamiento {
 model Presupuesto {
   id            String             @id @default(uuid()) @db.Uuid
   pacienteId    String             @map("paciente_id") @db.Uuid
-  odontologoId  String             @map("odontologo_id") @db.Uuid
   estado        EstadoPresupuesto  @default(BORRADOR)
   subtotal      Decimal            @default(0) @db.Decimal(12, 2)
   descuento     Decimal            @default(0) @db.Decimal(12, 2)
@@ -255,7 +201,6 @@ model Presupuesto {
   deletedAt     DateTime?          @map("deleted_at") @db.Timestamptz(6)
 
   paciente   Paciente @relation(fields: [pacienteId], references: [id])
-  odontologo Profile  @relation("PresupuestoOdontologo", fields: [odontologoId], references: [id])
   items      PresupuestoItem[]
   pagos      Pago[]
 
@@ -292,13 +237,11 @@ model Pago {
   fechaPago     DateTime    @default(now()) @map("fecha_pago") @db.Timestamptz(6)
   referencia    String?
   observaciones String?
-  createdById   String?     @map("created_by") @db.Uuid
   createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   paciente     Paciente      @relation(fields: [pacienteId], references: [id])
   presupuesto  Presupuesto?  @relation(fields: [presupuestoId], references: [id])
-  createdBy    Profile?      @relation("PagoCreatedBy", fields: [createdById], references: [id])
   comprobante  Comprobante?
   cajaMovimientos CajaMovimiento[]
 
@@ -332,11 +275,9 @@ model CajaMovimiento {
   metodoPago  MetodoPago?         @map("metodo_pago")
   pagoId      String?             @map("pago_id") @db.Uuid
   descripcion String?
-  createdById String?             @map("created_by") @db.Uuid
   createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
 
   pago      Pago?    @relation(fields: [pagoId], references: [id])
-  createdBy Profile? @relation("CajaCreatedBy", fields: [createdById], references: [id])
 
   @@index([createdAt])
   @@map("caja_movimientos")
@@ -368,11 +309,9 @@ model InventarioMovimiento {
   stockAnterior Decimal                  @map("stock_anterior") @db.Decimal(12, 2)
   stockNuevo    Decimal                  @map("stock_nuevo") @db.Decimal(12, 2)
   motivo        String?
-  createdById   String?                  @map("created_by") @db.Uuid
   createdAt     DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
 
   insumo    Insumo   @relation(fields: [insumoId], references: [id])
-  createdBy Profile? @relation("InventarioCreatedBy", fields: [createdById], references: [id])
 
   @@index([insumoId])
   @@map("inventario_movimientos")

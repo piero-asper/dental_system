@@ -9,17 +9,15 @@ Sistema web profesional para la gestión integral de una clínica dental. Permit
 - Base de datos: PostgreSQL en Supabase.
 - ORM: Prisma.
 - Autenticacion: Supabase Auth.
-- Autorizacion: roles en tabla `profiles`, validacion de JWT en backend y Row Level Security.
+- Autorizacion: usuario unico autenticado por Supabase Auth, validacion de JWT en backend y Row Level Security simple para usuarios autenticados.
 - Archivos: Supabase Storage.
 - Documentacion API: Swagger.
 - Pruebas: Jest.
 - CI: GitHub Actions.
 - Contenedores: no se usara Docker.
 
-## Roles
-- Administrador: gestiona usuarios, configuracion, catalogos, reportes, caja, inventario y acceso completo al sistema.
-- Odontologo: gestiona su agenda clinica, pacientes asignados, historias clinicas, odontograma, evoluciones, tratamientos y presupuestos clinicos.
-- Recepcionista: gestiona pacientes, citas, agenda, cobros operativos y consultas administrativas permitidas.
+## Usuarios
+Sistema de usuario único (sin roles). El registro público está desactivado en Supabase. El usuario operativo se crea manualmente desde el panel de Supabase y tiene acceso total al sistema.
 
 ## Estructura del proyecto
 ```text
@@ -61,7 +59,7 @@ sistema-dental/
 - Frontend usa solamente la anon key de Supabase cuando sea necesaria para autenticacion.
 - Commits convencionales.
 - Ramas: `main`, `develop`, `feature/*`.
-- Seguridad con validacion de entradas, RLS en tablas sensibles y auditoria en historias clinicas.
+- Seguridad con validacion de entradas, RLS simple para usuarios autenticados y auditoria en historias clinicas.
 - Pruebas unitarias por servicio y pruebas e2e en flujos criticos.
 - Definition of Done: codigo revisado, probado y documentado en Swagger.
 
@@ -115,31 +113,30 @@ sistema-dental/
 - Permitir login y cierre de sesion con Supabase Auth.
 - Mantener sesion del usuario en frontend.
 - Validar JWT en backend para endpoints protegidos.
-- Obtener perfil del usuario autenticado desde `profiles`.
-- Aplicar permisos segun rol: Administrador, Odontologo y Recepcionista.
-- Bloquear acceso a rutas y acciones no autorizadas.
+- Bloquear acceso a rutas y acciones cuando no exista sesion activa.
+- Mantener el registro publico de usuarios desactivado en Supabase.
 
 ### pacientes
 - Registrar pacientes con datos personales, contacto y datos administrativos.
 - Editar datos de pacientes existentes.
 - Buscar pacientes por nombre, documento, telefono o correo.
 - Consultar detalle del paciente.
-- Restringir acceso segun rol.
+- Proteger el acceso con autenticacion obligatoria.
 
 ### citas
-- Consultar agenda diaria, semanal y por odontologo.
+- Consultar agenda diaria y semanal.
 - Reservar citas para pacientes.
 - Reprogramar citas existentes.
 - Cancelar citas con motivo.
 - Gestionar estados de cita: programada, confirmada, atendida, cancelada y no asistio.
-- Evitar cruces de horarios para un mismo odontologo.
+- Evitar cruces de horarios en la agenda.
 
 ### historias-clinicas
 - Crear y consultar historia clinica por paciente.
 - Registrar antecedentes, diagnosticos, notas clinicas y evoluciones.
 - Gestionar odontograma.
 - Registrar auditoria de cambios clinicos.
-- Proteger informacion sensible con permisos y RLS.
+- Proteger informacion sensible con autenticacion obligatoria y RLS.
 
 ### tratamientos
 - Gestionar catalogo de tratamientos.
@@ -153,7 +150,7 @@ sistema-dental/
 - Consultar caja diaria.
 - Generar comprobantes.
 - Consultar deudas y saldos pendientes.
-- Restringir anulaciones o ajustes sensibles a Administrador.
+- Registrar anulaciones o ajustes sensibles con trazabilidad.
 
 ### inventario
 - Registrar insumos dentales.
@@ -165,17 +162,17 @@ sistema-dental/
 ### panel
 - Mostrar indicadores del dia.
 - Mostrar citas del dia.
-- Mostrar pagos/cobros del dia segun permisos.
+- Mostrar pagos/cobros del dia.
 - Mostrar alertas operativas: citas pendientes, deudas y bajo stock.
 
 ### reportes
 - Generar reportes de citas, pacientes, tratamientos, pagos e inventario.
 - Filtrar reportes por fecha, estado, profesional y modulo.
 - Exportar reportes segun alcance definido.
-- Restringir reportes sensibles a Administrador.
+- Proteger reportes con autenticacion obligatoria.
 
 ## Requisitos no funcionales
-- Seguridad: autenticacion obligatoria en endpoints privados, autorizacion por rol y RLS en tablas sensibles.
+- Seguridad: autenticacion obligatoria en endpoints privados y RLS simple para usuarios autenticados.
 - Privacidad: no exponer secretos ni datos sensibles fuera del backend.
 - Auditoria: registrar cambios relevantes en historias clinicas y operaciones sensibles.
 - Mantenibilidad: arquitectura modular por capas y separacion estricta frontend/backend.
@@ -183,76 +180,75 @@ sistema-dental/
 - Calidad: pruebas unitarias por servicio y e2e en flujos criticos.
 - Observabilidad: logs centralizados en backend para errores y eventos relevantes.
 - Documentacion: endpoints documentados en Swagger.
-- Usabilidad: interfaz clara para flujos frecuentes de recepcion, atencion clinica y administracion.
+- Usabilidad: interfaz clara para flujos frecuentes de atencion clinica y administracion.
 - Disponibilidad: manejo consistente de errores y estados de carga en frontend.
 - Rendimiento: busquedas y listados con paginacion o filtros cuando aplique.
 - Configuracion: variables por entorno usando `.env.example` sin valores reales.
 
 ## Historias de usuario
 ### autenticacion
-- Como Administrador, quiero iniciar sesion para acceder a las funciones de administracion de la clinica.
-- Como Odontologo, quiero iniciar sesion para consultar mi agenda y mis pacientes asignados.
-- Como Recepcionista, quiero iniciar sesion para gestionar citas y pacientes.
+- Como usuario unico, quiero iniciar sesion para acceder al sistema de la clinica.
+- Como usuario unico, quiero mantener mi sesion activa para trabajar sin iniciar sesion en cada pantalla.
+- Como usuario unico, quiero acceder solo cuando mi cuenta exista en Supabase Auth.
 - Como usuario autenticado, quiero cerrar sesion para proteger mi cuenta.
-- Como Administrador, quiero que cada usuario tenga un rol para controlar sus permisos.
 
 ### pacientes
-- Como Recepcionista, quiero registrar pacientes para que puedan agendar citas.
-- Como Recepcionista, quiero buscar pacientes rapidamente para atender llamadas o visitas.
-- Como Odontologo, quiero consultar los datos de un paciente para preparar su atencion.
-- Como Administrador, quiero editar datos administrativos del paciente para mantener la informacion actualizada.
+- Como usuario unico, quiero registrar pacientes para que puedan agendar citas.
+- Como usuario unico, quiero buscar pacientes rapidamente para atender llamadas o visitas.
+- Como usuario unico, quiero consultar los datos de un paciente para preparar su atencion.
+- Como usuario unico, quiero editar datos administrativos del paciente para mantener la informacion actualizada.
 
 ### citas
-- Como Recepcionista, quiero reservar citas para organizar la agenda de la clinica.
-- Como Recepcionista, quiero reprogramar citas para atender cambios solicitados por pacientes.
-- Como Recepcionista, quiero cancelar citas con motivo para mantener historial operativo.
-- Como Odontologo, quiero ver mi agenda diaria para preparar mis atenciones.
-- Como Administrador, quiero consultar la agenda completa para supervisar la operacion.
+- Como usuario unico, quiero reservar citas para organizar la agenda de la clinica.
+- Como usuario unico, quiero reprogramar citas para atender cambios solicitados por pacientes.
+- Como usuario unico, quiero cancelar citas con motivo para mantener historial operativo.
+- Como usuario unico, quiero ver la agenda diaria para preparar las atenciones.
+- Como usuario unico, quiero consultar la agenda completa para supervisar la operacion.
 
 ### historias-clinicas
-- Como Odontologo, quiero crear y actualizar historias clinicas para documentar la atencion del paciente.
-- Como Odontologo, quiero registrar evoluciones para mantener seguimiento clinico.
-- Como Odontologo, quiero usar un odontograma para registrar hallazgos dentales.
-- Como Administrador, quiero auditar cambios clinicos para cumplir controles internos.
-- Como Recepcionista, quiero tener acceso restringido a informacion clinica para proteger datos sensibles.
+- Como usuario unico, quiero crear y actualizar historias clinicas para documentar la atencion del paciente.
+- Como usuario unico, quiero registrar evoluciones para mantener seguimiento clinico.
+- Como usuario unico, quiero usar un odontograma para registrar hallazgos dentales.
+- Como usuario unico, quiero auditar cambios clinicos para cumplir controles internos.
+- Como usuario unico, quiero proteger informacion clinica con autenticacion y RLS.
 
 ### tratamientos
-- Como Administrador, quiero gestionar el catalogo de tratamientos para mantener precios y servicios actualizados.
-- Como Odontologo, quiero crear presupuestos para proponer planes de tratamiento a pacientes.
-- Como Recepcionista, quiero consultar presupuestos aceptados para coordinar citas y pagos.
-- Como Administrador, quiero revisar presupuestos por estado para controlar la gestion comercial.
+- Como usuario unico, quiero gestionar el catalogo de tratamientos para mantener precios y servicios actualizados.
+- Como usuario unico, quiero crear presupuestos para proponer planes de tratamiento a pacientes.
+- Como usuario unico, quiero consultar presupuestos aceptados para coordinar citas y pagos.
+- Como usuario unico, quiero revisar presupuestos por estado para controlar la gestion comercial.
 
 ### pagos
-- Como Recepcionista, quiero registrar cobros para mantener la caja actualizada.
-- Como Recepcionista, quiero emitir comprobantes para entregar soporte al paciente.
-- Como Administrador, quiero consultar caja diaria para controlar ingresos.
-- Como Administrador, quiero revisar deudas para dar seguimiento financiero.
-- Como Odontologo, quiero consultar el estado de pago de tratamientos relacionados a mis pacientes cuando aplique.
+- Como usuario unico, quiero registrar cobros para mantener la caja actualizada.
+- Como usuario unico, quiero emitir comprobantes para entregar soporte al paciente.
+- Como usuario unico, quiero consultar caja diaria para controlar ingresos.
+- Como usuario unico, quiero revisar deudas para dar seguimiento financiero.
+- Como usuario unico, quiero consultar el estado de pago de tratamientos cuando aplique.
 
 ### inventario
-- Como Administrador, quiero registrar insumos para controlar el inventario de la clinica.
-- Como Administrador, quiero registrar entradas y salidas para mantener stock actualizado.
-- Como Odontologo, quiero consultar disponibilidad de insumos relevantes para planificar atenciones.
-- Como Recepcionista, quiero ver alertas de bajo stock para informar al responsable.
+- Como usuario unico, quiero registrar insumos para controlar el inventario de la clinica.
+- Como usuario unico, quiero registrar entradas y salidas para mantener stock actualizado.
+- Como usuario unico, quiero consultar disponibilidad de insumos relevantes para planificar atenciones.
+- Como usuario unico, quiero ver alertas de bajo stock.
 
 ### panel
-- Como Administrador, quiero ver indicadores del dia para supervisar la operacion.
-- Como Odontologo, quiero ver mis citas del dia para organizar mi jornada.
-- Como Recepcionista, quiero ver citas pendientes y confirmaciones para coordinar la atencion.
+- Como usuario unico, quiero ver indicadores del dia para supervisar la operacion.
+- Como usuario unico, quiero ver citas del dia para organizar mi jornada.
+- Como usuario unico, quiero ver citas pendientes y confirmaciones para coordinar la atencion.
 
 ### reportes
-- Como Administrador, quiero generar reportes de pagos para analizar ingresos.
-- Como Administrador, quiero generar reportes de citas para medir ocupacion.
-- Como Administrador, quiero generar reportes de inventario para controlar consumo de insumos.
-- Como Odontologo, quiero consultar reportes de atenciones propias para revisar productividad clinica.
-- Como Recepcionista, quiero consultar reportes operativos permitidos para apoyar la gestion diaria.
+- Como usuario unico, quiero generar reportes de pagos para analizar ingresos.
+- Como usuario unico, quiero generar reportes de citas para medir ocupacion.
+- Como usuario unico, quiero generar reportes de inventario para controlar consumo de insumos.
+- Como usuario unico, quiero consultar reportes de atenciones para revisar productividad clinica.
+- Como usuario unico, quiero consultar reportes operativos para apoyar la gestion diaria.
 
 ## Modulos
 ### autenticacion
-- Funcion: login, sesion, roles y permisos.
+- Funcion: login, sesión y protección de rutas.
 - Endpoints: pendiente de definir en Sprint 1.
-- Tablas: `profiles`.
-- Notas: backend validara JWT emitido por Supabase Auth.
+- Tablas: no aplica; se usa Supabase Auth sin tabla `profiles`.
+- Notas: backend validara JWT emitido por Supabase Auth. El registro público debe estar desactivado en Supabase.
 - Estado: pendiente.
 
 ### pacientes
@@ -287,7 +283,7 @@ sistema-dental/
 - Funcion: cobros, caja, comprobantes y deudas.
 - Endpoints: pendiente de definir en Sprint 6.
 - Tablas: `pagos`, `comprobantes`, `caja_movimientos`.
-- Notas: operaciones sensibles restringidas por rol.
+- Notas: operaciones sensibles protegidas por autenticacion y trazabilidad.
 - Estado: pendiente.
 
 ### inventario
@@ -301,14 +297,14 @@ sistema-dental/
 - Funcion: indicadores del dia solo frontend.
 - Endpoints: consumira endpoints de modulos existentes.
 - Tablas: no aplica directamente.
-- Notas: muestra datos segun rol.
+- Notas: muestra datos del usuario unico autenticado.
 - Estado: pendiente.
 
 ### reportes
 - Funcion: reportes y exportaciones.
 - Endpoints: pendiente de definir en Sprint 8.
 - Tablas: consultara datos de modulos existentes.
-- Notas: reportes sensibles restringidos a Administrador.
+- Notas: reportes protegidos por autenticacion obligatoria.
 - Estado: pendiente.
 
 ## Modelo de datos
@@ -322,12 +318,6 @@ sistema-dental/
 - Los campos sensibles se expondran solo segun permisos y RLS.
 
 ### Entidades principales
-#### profiles
-- Modulo: autenticacion.
-- Campos: `id`, `auth_user_id`, `email`, `nombre`, `apellido`, `telefono`, `rol`, `activo`, `created_at`, `updated_at`.
-- Relaciones: puede ser odontologo responsable de citas, creador de registros y actor de auditoria.
-- Notas: `auth_user_id` referencia el usuario de Supabase Auth.
-
 #### pacientes
 - Modulo: pacientes.
 - Campos: `id`, `tipo_documento`, `numero_documento`, `nombres`, `apellidos`, `fecha_nacimiento`, `sexo`, `telefono`, `email`, `direccion`, `contacto_emergencia_nombre`, `contacto_emergencia_telefono`, `activo`, `created_at`, `updated_at`, `deleted_at`.
@@ -336,32 +326,32 @@ sistema-dental/
 
 #### citas
 - Modulo: citas.
-- Campos: `id`, `paciente_id`, `odontologo_id`, `fecha_inicio`, `fecha_fin`, `estado`, `motivo`, `notas`, `motivo_cancelacion`, `created_by`, `updated_by`, `created_at`, `updated_at`, `deleted_at`.
-- Relaciones: pertenece a un paciente y a un odontologo.
-- Notas: no debe existir cruce de horarios activos para el mismo odontologo.
+- Campos: `id`, `paciente_id`, `fecha_inicio`, `fecha_fin`, `estado`, `motivo`, `notas`, `motivo_cancelacion`, `created_at`, `updated_at`, `deleted_at`.
+- Relaciones: pertenece a un paciente.
+- Notas: no debe existir cruce de horarios activos en la agenda.
 
 #### historias_clinicas
 - Modulo: historias-clinicas.
-- Campos: `id`, `paciente_id`, `antecedentes_medicos`, `alergias`, `medicamentos`, `observaciones`, `created_by`, `updated_by`, `created_at`, `updated_at`.
+- Campos: `id`, `paciente_id`, `antecedentes_medicos`, `alergias`, `medicamentos`, `observaciones`, `created_at`, `updated_at`.
 - Relaciones: pertenece a un paciente y tiene evoluciones, odontograma y auditoria.
 - Notas: debe existir maximo una historia clinica activa por paciente.
 
 #### evoluciones_clinicas
 - Modulo: historias-clinicas.
-- Campos: `id`, `historia_clinica_id`, `odontologo_id`, `fecha`, `diagnostico`, `procedimiento`, `observaciones`, `created_at`, `updated_at`.
-- Relaciones: pertenece a una historia clinica y a un odontologo.
+- Campos: `id`, `historia_clinica_id`, `fecha`, `diagnostico`, `procedimiento`, `observaciones`, `created_at`, `updated_at`.
+- Relaciones: pertenece a una historia clinica.
 - Notas: los registros clinicos no se eliminan fisicamente.
 
 #### odontograma_piezas
 - Modulo: historias-clinicas.
-- Campos: `id`, `historia_clinica_id`, `pieza`, `superficie`, `estado`, `observaciones`, `created_by`, `updated_by`, `created_at`, `updated_at`.
+- Campos: `id`, `historia_clinica_id`, `pieza`, `superficie`, `estado`, `observaciones`, `created_at`, `updated_at`.
 - Relaciones: pertenece a una historia clinica.
 - Notas: `pieza` debe respetar numeracion dental definida por la clinica.
 
 #### auditoria_historias_clinicas
 - Modulo: historias-clinicas.
-- Campos: `id`, `historia_clinica_id`, `actor_id`, `accion`, `tabla_afectada`, `registro_id`, `valor_anterior`, `valor_nuevo`, `created_at`.
-- Relaciones: pertenece a una historia clinica y a un usuario actor.
+- Campos: `id`, `historia_clinica_id`, `accion`, `tabla_afectada`, `registro_id`, `valor_anterior`, `valor_nuevo`, `created_at`.
+- Relaciones: pertenece a una historia clinica.
 - Notas: `valor_anterior` y `valor_nuevo` se guardaran como JSON.
 
 #### tratamientos
@@ -372,8 +362,8 @@ sistema-dental/
 
 #### presupuestos
 - Modulo: tratamientos.
-- Campos: `id`, `paciente_id`, `odontologo_id`, `estado`, `subtotal`, `descuento`, `total`, `observaciones`, `created_at`, `updated_at`, `deleted_at`.
-- Relaciones: pertenece a paciente y odontologo; tiene items y puede tener pagos asociados.
+- Campos: `id`, `paciente_id`, `estado`, `subtotal`, `descuento`, `total`, `observaciones`, `created_at`, `updated_at`, `deleted_at`.
+- Relaciones: pertenece a paciente; tiene items y puede tener pagos asociados.
 - Notas: el total se calcula a partir de los items, descuento e impuestos futuros si aplican.
 
 #### presupuesto_items
@@ -384,7 +374,7 @@ sistema-dental/
 
 #### pagos
 - Modulo: pagos.
-- Campos: `id`, `paciente_id`, `presupuesto_id`, `monto`, `metodo_pago`, `estado`, `fecha_pago`, `referencia`, `observaciones`, `created_by`, `created_at`, `updated_at`.
+- Campos: `id`, `paciente_id`, `presupuesto_id`, `monto`, `metodo_pago`, `estado`, `fecha_pago`, `referencia`, `observaciones`, `created_at`, `updated_at`.
 - Relaciones: pertenece a paciente, opcionalmente a presupuesto y puede tener comprobante.
 - Notas: pagos anulados conservan registro y motivo en observaciones o auditoria futura.
 
@@ -396,7 +386,7 @@ sistema-dental/
 
 #### caja_movimientos
 - Modulo: pagos.
-- Campos: `id`, `tipo`, `monto`, `metodo_pago`, `pago_id`, `descripcion`, `created_by`, `created_at`.
+- Campos: `id`, `tipo`, `monto`, `metodo_pago`, `pago_id`, `descripcion`, `created_at`.
 - Relaciones: puede asociarse a un pago.
 - Notas: registra ingresos, egresos y ajustes operativos.
 
@@ -408,13 +398,11 @@ sistema-dental/
 
 #### inventario_movimientos
 - Modulo: inventario.
-- Campos: `id`, `insumo_id`, `tipo`, `cantidad`, `stock_anterior`, `stock_nuevo`, `motivo`, `created_by`, `created_at`.
-- Relaciones: pertenece a un insumo y a un usuario creador.
+- Campos: `id`, `insumo_id`, `tipo`, `cantidad`, `stock_anterior`, `stock_nuevo`, `motivo`, `created_at`.
+- Relaciones: pertenece a un insumo.
 - Notas: cada entrada o salida debe dejar trazabilidad del stock anterior y nuevo.
 
 ### Relaciones principales
-- `profiles` 1 a N `citas` como odontologo.
-- `profiles` 1 a N registros creados o actualizados en modulos operativos.
 - `pacientes` 1 a N `citas`.
 - `pacientes` 1 a 1 `historias_clinicas`.
 - `historias_clinicas` 1 a N `evoluciones_clinicas`.
@@ -429,7 +417,6 @@ sistema-dental/
 - `insumos` 1 a N `inventario_movimientos`.
 
 ### Enums iniciales
-- `RolUsuario`: `ADMINISTRADOR`, `ODONTOLOGO`, `RECEPCIONISTA`.
 - `EstadoCita`: `PROGRAMADA`, `CONFIRMADA`, `ATENDIDA`, `CANCELADA`, `NO_ASISTIO`.
 - `EstadoPresupuesto`: `BORRADOR`, `ENVIADO`, `ACEPTADO`, `RECHAZADO`, `FINALIZADO`.
 - `MetodoPago`: `EFECTIVO`, `TARJETA`, `TRANSFERENCIA`, `OTRO`.
@@ -456,7 +443,7 @@ sistema-dental/
 - Seguridad HTTP configurada con `helmet`.
 - Compresion HTTP configurada con `compression`.
 - Filtro global de errores creado en `HttpExceptionFilter`.
-- Guards globales creados para JWT y roles.
+- Guard global creado para JWT de Supabase.
 - Prisma configurado con `schema.prisma` y `PrismaService`.
 - Endpoint publico inicial creado: `GET /api/health`.
 
@@ -483,33 +470,33 @@ sistema-dental/
 - Nota: `npm audit` reporto vulnerabilidades transitivas; quedan registradas como pendiente antes de produccion.
 
 ## Reglas de datos
-- No se permite crear usuarios operativos sin registro asociado en `profiles`.
-- Un usuario inactivo no puede acceder a funcionalidades protegidas.
-- Solo Administrador puede cambiar roles y activar o desactivar usuarios.
+- El registro publico de usuarios debe permanecer desactivado en Supabase.
+- El usuario operativo se crea manualmente desde el panel de Supabase.
 - Un paciente no debe duplicarse por el mismo `tipo_documento` y `numero_documento`.
 - La eliminacion de pacientes sera logica mediante `deleted_at`.
 - No se pueden crear citas con `fecha_fin` menor o igual a `fecha_inicio`.
-- No se pueden crear o reprogramar citas que crucen horarios activos del mismo odontologo.
+- No se pueden crear o reprogramar citas que crucen horarios activos en la agenda.
 - Solo citas `PROGRAMADA` o `CONFIRMADA` pueden cancelarse.
-- Una cita `ATENDIDA` no debe volver a estados previos sin permiso administrativo.
+- Una cita `ATENDIDA` no debe volver a estados previos sin una decision operativa registrada.
 - Cada paciente puede tener una sola historia clinica activa.
 - Las evoluciones clinicas y auditorias no se eliminan fisicamente.
 - Todo cambio relevante en historias clinicas debe crear un registro en `auditoria_historias_clinicas`.
 - Los precios historicos de presupuestos se guardan en `presupuesto_items.precio_unitario`.
-- Un presupuesto `ACEPTADO` no debe modificarse libremente; los cambios requieren nueva version o control administrativo futuro.
+- Un presupuesto `ACEPTADO` no debe modificarse libremente; los cambios requieren nueva version o trazabilidad futura.
 - Un pago no puede tener monto menor o igual a cero.
 - Un pago anulado no se borra; cambia a estado `ANULADO`.
 - La caja diaria se calcula desde `caja_movimientos` y pagos registrados.
 - Un insumo no puede quedar con `stock_actual` negativo.
 - Todo movimiento de inventario debe guardar `stock_anterior` y `stock_nuevo`.
-- Los reportes respetaran permisos por rol y no saltaran RLS.
+- Los reportes respetaran autenticacion obligatoria y no saltaran RLS.
 
 ## Decisiones tecnicas
 | Fecha | Decision | Motivo |
 |---|---|---|
 | 2026-10-12 | Trabajar por sprints y modulo por modulo. | Mantener alcance controlado, trazabilidad y entregas verificables. |
 | 2026-10-12 | Separar backend y frontend como proyectos independientes. | Evitar acoplamiento y mantener responsabilidades claras. |
-| 2026-10-12 | Usar Supabase Auth con validacion JWT en backend y roles en `profiles`. | Combinar autenticacion gestionada con autorizacion propia del dominio. |
+| 2026-10-12 | Usar Supabase Auth con validacion JWT en backend. | Delegar autenticacion en Supabase y proteger endpoints desde NestJS. |
+| 13/10/2026 | Sin tabla `profiles` ni roles | El sistema lo usa una sola persona |
 | 2026-10-12 | No usar Docker. | Cumplir restriccion tecnica del proyecto. |
 | 2026-10-12 | Mantener solo `docs/SPRINT.md` y `docs/DOCUMENTACION.md` como archivos de seguimiento. | Centralizar el estado del proyecto y evitar documentacion duplicada. |
 | 2026-10-12 | Usar UUID como llave primaria en tablas del dominio. | Facilitar integracion con Supabase, seguridad y escalabilidad. |
@@ -523,6 +510,6 @@ sistema-dental/
 ## Historial de cambios
 | Fecha | Sprint | Cambio |
 |---|---|---|
-| 2026-10-12 | Sprint 0 | Se definieron requisitos funcionales, requisitos no funcionales e historias de usuario por modulo y rol. |
+| 2026-10-12 | Sprint 0 | Se definieron requisitos funcionales, requisitos no funcionales e historias de usuario por modulo. |
 | 2026-10-12 | Sprint 0 | Se definio el modelo entidad-relacion inicial y las reglas de datos del sistema. |
 | 2026-10-12 | Sprint 0 | Se creo la estructura base del backend NestJS, frontend React, Prisma, RLS inicial, variables de entorno, Git, CI y validaciones locales. |
