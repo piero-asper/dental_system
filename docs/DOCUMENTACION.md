@@ -63,6 +63,104 @@ sistema-dental/
 - Pruebas unitarias por servicio y pruebas e2e en flujos criticos.
 - Definition of Done: codigo revisado, probado y documentado en Swagger.
 
+### Git y ramas
+#### Ramas
+- `main`: codigo estable, siempre funcionando. Solo recibe codigo desde `develop` al cerrar un sprint.
+- `develop`: rama de integracion del sprint. Recibe cambios mediante Pull Request desde ramas de tarea.
+- `feature/*`: una tarea o modulo concreto. Se crea desde `develop` y se borra al terminar.
+- `fix/*`: correcciones puntuales. Se crea desde `develop` y se borra al terminar.
+- `chore/*`: tareas tecnicas o de configuracion. Se crea desde `develop` y se borra al terminar.
+- `docs/*`: cambios de documentacion. Se crea desde `develop` y se borra al terminar.
+- Nunca se programa directo en `main` ni en `develop`.
+
+#### Nombres de ramas
+Formato general: `tipo/sprint-modulo-capa`.
+
+Ejemplos:
+- `feature/s1-autenticacion-backend`
+- `feature/s2-pacientes-frontend`
+- `fix/s2-pacientes-validacion-dni`
+- `chore/s0-gitignore`
+- `docs/actualizar-sprint`
+
+Una rama corresponde a una tarea concreta. Para desarrollo funcional, separar por modulo y capa cuando aplique: backend o frontend.
+
+#### Flujo de trabajo
+1. Crear la rama desde `develop`:
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git checkout -b feature/s1-autenticacion-backend
+   ```
+
+2. Trabajar con commits pequenos y descriptivos.
+
+3. Antes de cada commit, revisar el estado:
+   ```bash
+   git status
+   ```
+
+   Confirmar que no aparezca ningun archivo `.env`.
+
+4. Subir la rama:
+   ```bash
+   git push -u origin feature/s1-autenticacion-backend
+   ```
+
+5. Crear Pull Request en GitHub desde la rama de tarea hacia `develop`.
+
+6. Antes de hacer merge:
+   - Verificar que el CI pase.
+   - Verificar que no aparezca ningun `.env`.
+   - Revisar que el alcance corresponda a la tarea.
+
+7. Despues del merge, limpiar la rama local y remota:
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git branch -d feature/s1-autenticacion-backend
+   git push origin --delete feature/s1-autenticacion-backend
+   ```
+
+#### Cierre de sprint
+Al cerrar un sprint:
+1. Crear Pull Request de `develop` hacia `main`.
+2. Verificar que el CI pase.
+3. Hacer merge solo cuando el sprint este validado.
+4. Crear etiqueta de version desde `main`:
+   ```bash
+   git checkout main
+   git pull origin main
+   git tag -a v0.1.0 -m "Sprint 1: autenticacion"
+   git push origin v0.1.0
+   ```
+
+#### Commits
+Formato: `tipo(modulo): descripcion en minuscula`.
+
+Ejemplos:
+- `feat(pacientes): agregar busqueda por nombre`
+- `fix(citas): corregir cruce de horarios`
+- `refactor(pagos): separar calculo de deuda`
+- `docs: actualizar SPRINT.md`
+- `chore: agregar .env.example`
+- `test(pacientes): pruebas del service`
+
+#### Proteccion de ramas
+En GitHub, configurar proteccion para `main`:
+- Exigir Pull Request antes de unir.
+- Exigir que el CI pase.
+- Bloquear push directo.
+
+Tambien se recomienda proteger `develop` para evitar commits directos y mantener todo cambio mediante Pull Request.
+
+#### Reglas operativas
+- Antes de cada commit se debe ejecutar `git status` y confirmar que no aparezca ningun `.env`.
+- Al iniciar cada tarea se debe crear una rama desde `develop` con el nombre correcto.
+- Al terminar cada tarea se deben indicar los comandos de commit, push, Pull Request y limpieza.
+- Al cerrar un sprint se deben indicar los comandos de merge hacia `main` y etiqueta de version.
+- El trabajo se guia paso a paso, con comandos listos para copiar y pegar.
+
 ## Variables de entorno
 ### Backend
 - `DATABASE_URL`
