@@ -9,7 +9,6 @@ import { AuthUser } from '../types/auth-user.type';
 type JwtPayload = {
   sub: string;
   email?: string;
-  role?: string;
   app_metadata?: Record<string, unknown>;
   user_metadata?: Record<string, unknown>;
 };
@@ -48,8 +47,7 @@ export class JwtAuthGuard implements CanActivate {
       const payload = verify(token, jwtSecret) as JwtPayload;
       request.user = {
         authUserId: payload.sub,
-        email: payload.email,
-        role: payload.role
+        email: payload.email
       };
 
       return true;

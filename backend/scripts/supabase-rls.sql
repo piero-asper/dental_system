@@ -1,7 +1,7 @@
 -- Script inicial de Row Level Security para Supabase.
 -- Ejecutar despues de crear las tablas con Prisma Migrate.
+-- Sistema de usuario unico: cualquier usuario autenticado puede leer y escribir.
 
-alter table if exists profiles enable row level security;
 alter table if exists pacientes enable row level security;
 alter table if exists citas enable row level security;
 alter table if exists historias_clinicas enable row level security;
@@ -17,59 +17,87 @@ alter table if exists caja_movimientos enable row level security;
 alter table if exists insumos enable row level security;
 alter table if exists inventario_movimientos enable row level security;
 
-create or replace function public.current_profile_role()
-returns text
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select rol::text
-  from public.profiles
-  where auth_user_id = auth.uid()
-    and activo = true
-  limit 1
-$$;
-
-create or replace function public.is_admin()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select coalesce(public.current_profile_role() = 'ADMINISTRADOR', false)
-$$;
-
-create policy "profiles_select_own_or_admin"
-on profiles for select
+create policy "authenticated_full_access_pacientes"
+on pacientes for all
 to authenticated
-using (auth_user_id = auth.uid() or public.is_admin());
+using (true)
+with check (true);
 
-create policy "admin_full_profiles"
-on profiles for all
+create policy "authenticated_full_access_citas"
+on citas for all
 to authenticated
-using (public.is_admin())
-with check (public.is_admin());
+using (true)
+with check (true);
 
-create policy "authenticated_read_operational_tables"
-on pacientes for select
-to authenticated
-using (public.current_profile_role() in ('ADMINISTRADOR', 'ODONTOLOGO', 'RECEPCIONISTA'));
-
-create policy "authenticated_read_citas"
-on citas for select
-to authenticated
-using (public.current_profile_role() in ('ADMINISTRADOR', 'ODONTOLOGO', 'RECEPCIONISTA'));
-
-create policy "clinical_read"
-on historias_clinicas for select
-to authenticated
-using (public.current_profile_role() in ('ADMINISTRADOR', 'ODONTOLOGO'));
-
-create policy "clinical_write"
+create policy "authenticated_full_access_historias_clinicas"
 on historias_clinicas for all
 to authenticated
-using (public.current_profile_role() in ('ADMINISTRADOR', 'ODONTOLOGO'))
-with check (public.current_profile_role() in ('ADMINISTRADOR', 'ODONTOLOGO'));
+using (true)
+with check (true);
+
+create policy "authenticated_full_access_evoluciones_clinicas"
+on evoluciones_clinicas for all
+to authenticated
+using (true)
+with check (true);
+
+create policy "authenticated_full_access_odontograma_piezas"
+on odontograma_piezas for all
+to authenticated
+using (true)
+with check (true);
+
+create policy "authenticated_full_access_auditoria_historias_clinicas"
+on auditoria_historias_clinicas for all
+to authenticated
+using (true)
+with check (true);
+
+create policy "authenticated_full_access_tratamientos"
+on tratamientos for all
+to authenticated
+using (true)
+with check (true);
+
+create policy "authenticated_full_access_presupuestos"
+on presupuestos for all
+to authenticated
+using (true)
+with check (true);
+
+create policy "authenticated_full_access_presupuesto_items"
+on presupuesto_items for all
+to authenticated
+using (true)
+with check (true);
+
+create policy "authenticated_full_access_pagos"
+on pagos for all
+to authenticated
+using (true)
+with check (true);
+
+create policy "authenticated_full_access_comprobantes"
+on comprobantes for all
+to authenticated
+using (true)
+with check (true);
+
+create policy "authenticated_full_access_caja_movimientos"
+on caja_movimientos for all
+to authenticated
+using (true)
+with check (true);
+
+create policy "authenticated_full_access_insumos"
+on insumos for all
+to authenticated
+using (true)
+with check (true);
+
+create policy "authenticated_full_access_inventario_movimientos"
+on inventario_movimientos for all
+to authenticated
+using (true)
+with check (true);
 

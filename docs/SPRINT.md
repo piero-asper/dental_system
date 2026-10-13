@@ -7,14 +7,14 @@
 
 ## Sprint actual
 - Sprint: Sprint 0
-- Estado: 🟨 En curso
+- Estado: ✅ Terminado
 - Duración estimada: 2 semanas
 - Objetivo: definir la base funcional, tecnica y documental del sistema antes de iniciar la implementacion.
 
 ## Sprint 0 - Requisitos, arquitectura inicial y preparacion
-- ✅ Paso 1: definir requisitos funcionales, requisitos no funcionales e historias de usuario por módulo y rol.
+- ✅ Paso 1: definir requisitos funcionales, requisitos no funcionales e historias de usuario por módulo.
 - ✅ Paso 2: definir modelo entidad-relacion inicial y reglas de datos.
-- 🟨 Paso 3: crear proyecto en Supabase y definir configuracion inicial.
+- ✅ Paso 3: crear proyecto en Supabase y definir configuracion inicial.
 - ✅ Paso 4: crear estructura base del repositorio sin Docker.
 - ✅ Paso 5: crear `.gitignore` y `.env.example` para backend y frontend.
 - ✅ Paso 6: configurar backend NestJS base con Swagger, validacion, logs y manejo centralizado de errores.
@@ -23,14 +23,15 @@
 - ✅ Paso 9: configurar GitFlow y GitHub Actions CI inicial.
 - ✅ Paso 10: revisar Definition of Done del Sprint 0.
 
+## Cambios fuera de sprint
+- ✅ 2026-10-13: cambio de requisito antes de iniciar Sprint 1. El sistema pasa a usuario único, sin tabla `profiles`, sin roles y con RLS simple para usuarios autenticados.
+
 ## Sprint 1 - autenticacion
-- ⬜ Login con Supabase Auth.
-- ⬜ Validacion de JWT en backend.
-- ⬜ Tabla `profiles` con roles.
-- ⬜ Guards y decoradores de permisos.
-- ⬜ RLS basico en tablas iniciales.
-- ⬜ Pruebas unitarias de servicios.
-- ⬜ Documentacion Swagger.
+- ⬜ Desactivar registro público en Supabase y crear el usuario manualmente.
+- ⬜ Backend: guard que valida el JWT de Supabase.
+- ⬜ RLS simple: solo usuarios autenticados.
+- ⬜ Frontend: login, sesión y rutas protegidas.
+- ⬜ Pruebas y Swagger.
 
 ## Sprint 2 - pacientes
 - ⬜ Registro de pacientes.
@@ -86,7 +87,7 @@
 - ⬜ Indicadores del dia en panel frontend.
 - ⬜ Reportes operativos.
 - ⬜ Exportaciones.
-- ⬜ Filtros por fecha, rol y modulo.
+- ⬜ Filtros por fecha, estado y modulo.
 - ⬜ Pruebas unitarias y e2e del flujo critico.
 - ⬜ Documentacion Swagger.
 
@@ -99,9 +100,9 @@
 - ⬜ Documentacion final.
 
 ## Pendientes / Bugs
-- 🟨 Crear el proyecto real en Supabase desde la cuenta de la clinica y copiar valores reales en `.env` local.
-- ⬜ Ejecutar `npx prisma migrate dev` cuando `DATABASE_URL` y `DIRECT_URL` reales esten configurados.
-- ⬜ Ejecutar `backend/scripts/supabase-rls.sql` en Supabase despues de crear las tablas.
+- ✅ Crear el proyecto real en Supabase desde la cuenta de la clinica y copiar valores reales en `.env` local.
+- ✅ Ejecutar `npx prisma migrate dev` cuando `DATABASE_URL` y `DIRECT_URL` reales esten configurados.
+- ✅ Ejecutar `backend/scripts/supabase-rls.sql` en Supabase despues de crear las tablas.
 - ⬜ Confirmar datos obligatorios de pacientes segun normativa/localidad de la clinica.
 - ⬜ Definir estrategia de numeracion de comprobantes antes del modulo pagos.
 - ⬜ Revisar vulnerabilidades reportadas por `npm audit` en dependencias transitivas antes de produccion.
