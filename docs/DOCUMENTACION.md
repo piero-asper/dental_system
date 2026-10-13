@@ -513,3 +513,5 @@ sistema-dental/
 | 2026-10-12 | Sprint 0 | Se definieron requisitos funcionales, requisitos no funcionales e historias de usuario por modulo. |
 | 2026-10-12 | Sprint 0 | Se definio el modelo entidad-relacion inicial y las reglas de datos del sistema. |
 | 2026-10-12 | Sprint 0 | Se creo la estructura base del backend NestJS, frontend React, Prisma, RLS inicial, variables de entorno, Git, CI y validaciones locales. |
+| 2026-10-13 | Sprint 0 | Se completo la configuracion inicial real con Supabase, migracion Prisma, RLS inicial y validaciones locales. |
+| 2026-10-13 | Fuera de sprint | Cambio de requisito antes de iniciar Sprint 1: sistema de usuario unico, sin tabla `profiles`, sin roles y con RLS simple para usuarios autenticados. |

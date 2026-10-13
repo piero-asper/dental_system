@@ -23,6 +23,9 @@
 - ✅ Paso 9: configurar GitFlow y GitHub Actions CI inicial.
 - ✅ Paso 10: revisar Definition of Done del Sprint 0.
 
+## Cambios fuera de sprint
+- ✅ 2026-10-13: cambio de requisito antes de iniciar Sprint 1. El sistema pasa a usuario único, sin tabla `profiles`, sin roles y con RLS simple para usuarios autenticados.
+
 ## Sprint 1 - autenticacion
 - ⬜ Desactivar registro público en Supabase y crear el usuario manualmente.
 - ⬜ Backend: guard que valida el JWT de Supabase.
