@@ -7,14 +7,14 @@
 
 ## Sprint actual
 - Sprint: Sprint 0
-- Estado: 🟨 En curso
+- Estado: ✅ Terminado
 - Duración estimada: 2 semanas
 - Objetivo: definir la base funcional, tecnica y documental del sistema antes de iniciar la implementacion.
 
 ## Sprint 0 - Requisitos, arquitectura inicial y preparacion
 - ✅ Paso 1: definir requisitos funcionales, requisitos no funcionales e historias de usuario por módulo y rol.
 - ✅ Paso 2: definir modelo entidad-relacion inicial y reglas de datos.
-- 🟨 Paso 3: crear proyecto en Supabase y definir configuracion inicial.
+- ✅ Paso 3: crear proyecto en Supabase y definir configuracion inicial.
 - ✅ Paso 4: crear estructura base del repositorio sin Docker.
 - ✅ Paso 5: crear `.gitignore` y `.env.example` para backend y frontend.
 - ✅ Paso 6: configurar backend NestJS base con Swagger, validacion, logs y manejo centralizado de errores.
@@ -99,9 +99,9 @@
 - ⬜ Documentacion final.
 
 ## Pendientes / Bugs
-- 🟨 Crear el proyecto real en Supabase desde la cuenta de la clinica y copiar valores reales en `.env` local.
-- ⬜ Ejecutar `npx prisma migrate dev` cuando `DATABASE_URL` y `DIRECT_URL` reales esten configurados.
-- ⬜ Ejecutar `backend/scripts/supabase-rls.sql` en Supabase despues de crear las tablas.
+- ✅ Crear el proyecto real en Supabase desde la cuenta de la clinica y copiar valores reales en `.env` local.
+- ✅ Ejecutar `npx prisma migrate dev` cuando `DATABASE_URL` y `DIRECT_URL` reales esten configurados.
+- ✅ Ejecutar `backend/scripts/supabase-rls.sql` en Supabase despues de crear las tablas.
 - ⬜ Confirmar datos obligatorios de pacientes segun normativa/localidad de la clinica.
 - ⬜ Definir estrategia de numeracion de comprobantes antes del modulo pagos.
 - ⬜ Revisar vulnerabilidades reportadas por `npm audit` en dependencias transitivas antes de produccion.
