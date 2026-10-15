@@ -17,7 +17,7 @@ Sistema web profesional para la gestión integral de una clínica dental. Permit
 - Contenedores: no se usara Docker.
 
 ## Usuarios
-Sistema de usuario único (sin roles). El registro público está desactivado en Supabase. El usuario operativo se crea manualmente desde el panel de Supabase y tiene acceso total al sistema.
+Sistema de usuario único (sin roles). El registro público y el acceso anonimo estan desactivados en Supabase. Existe una cuenta operativa con correo confirmado, creada manualmente y verificada durante Sprint 1. Tiene acceso total al sistema. El usuario confirmo la prueba real de acceso, persistencia al recargar y cierre de sesion.
 
 ## Estructura del proyecto
 ```text
@@ -48,7 +48,7 @@ sistema-dental/
 
 ## Reglas
 - Backend y frontend son proyectos independientes, cada uno con su propio `package.json`.
-- El frontend se comunica solo con el backend por API REST.
+- El frontend se comunica con el backend por API REST para los datos de negocio y directamente con Supabase Auth para iniciar, renovar y cerrar sesion.
 - Un modulo no importa directamente de otro modulo; lo comun vive en `common/` en backend o `shared/` en frontend.
 - Nombres de negocio en espanol y nombres tecnicos en ingles.
 - Backend por capas: controller -> service -> repository.
@@ -166,7 +166,6 @@ Tambien se recomienda proteger `develop` para evitar commits directos y mantener
 - `DATABASE_URL`
 - `DIRECT_URL`
 - `SUPABASE_URL`
-- `SUPABASE_JWT_SECRET`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `PORT`
 - `NODE_ENV`
@@ -182,11 +181,42 @@ Tambien se recomienda proteger `develop` para evitar commits directos y mantener
 - Copiar la URL del proyecto en `SUPABASE_URL` y `VITE_SUPABASE_URL`.
 - Copiar la anon key en `VITE_SUPABASE_ANON_KEY`.
 - Copiar la service role key solo en `backend/.env` como `SUPABASE_SERVICE_ROLE_KEY`.
-- Copiar el JWT secret solo en `backend/.env` como `SUPABASE_JWT_SECRET`.
+- No se requiere `SUPABASE_JWT_SECRET`: el backend verifica el token consultando Supabase Auth con las claves de firma vigentes del proyecto.
 - Copiar la cadena de conexion transaccional en `DATABASE_URL`.
 - Copiar la cadena directa en `DIRECT_URL`.
 - Ejecutar migraciones Prisma cuando existan credenciales reales.
 - Ejecutar `backend/scripts/supabase-rls.sql` despues de crear las tablas.
+
+### Cuenta de acceso (Sprint 1)
+1. En Supabase, abrir Authentication -> Sign In / Providers, desactivar Allow new users to sign up y guardar. Mantener el acceso con correo habilitado y el acceso anonimo desactivado.
+2. En Authentication -> Users -> Add user -> Create new user, crear la cuenta operativa con correo y contraseña. Confirmar la cuenta con Auto Confirm User si aparece esa opcion.
+3. Guardar la contraseña fuera del repositorio; nunca incluirla en archivos de seguimiento ni chats.
+4. Ejecutar `npm run auth:check` desde backend: debe mostrar registro publico desactivado, exactamente una cuenta y las 14 tablas con RLS y politicas para authenticated.
+5. Con ambos servidores locales activos, abrir `/pacientes` sin sesion: debe redirigir a `/login`. Ingresar con la cuenta, comprobar el retorno a pacientes, recargar y verificar que se conserva la sesion. Cerrar sesion y comprobar que las rutas privadas vuelven a exigir acceso.
+6. Si el backend no responde, la aplicacion bloquea el acceso y permite reintentar la verificacion de sesion.
+
+Referencia de configuracion: https://supabase.com/docs/guides/auth/general-configuration
+
+### Entrega de cambios del Sprint 1
+Rama actual: `feature/s1-autenticacion`, creada desde `develop` para el flujo completo de acceso.
+
+Despues de aprobar la prueba manual y revisar los archivos modificados:
+```bash
+git status
+git add .github/workflows/ci.yml backend frontend docs/SPRINT.md docs/DOCUMENTACION.md
+git diff --cached --name-only
+git commit -m "feat(autenticacion): implementar acceso con supabase y sesion protegida"
+git push -u origin feature/s1-autenticacion
+```
+Confirmar antes del commit que no hay archivos `.env` reales entre los cambios preparados; `.env.example` si se versiona.
+Crear un Pull Request de `feature/s1-autenticacion` hacia `develop` y comprobar ambos trabajos del CI. Despues de su integracion:
+```bash
+git checkout develop
+git pull origin develop
+git branch -d feature/s1-autenticacion
+git push origin --delete feature/s1-autenticacion
+```
+Si GitHub ya elimino la rama remota, omitir el ultimo comando. Cerrar el sprint solo despues del Pull Request `develop` -> `main`, CI correcto y etiqueta de version, segun las reglas de Git del proyecto.
 
 ## Comandos de desarrollo
 ### Backend
@@ -344,10 +374,17 @@ Tambien se recomienda proteger `develop` para evitar commits directos y mantener
 ## Modulos
 ### autenticacion
 - Funcion: login, sesión y protección de rutas.
-- Endpoints: pendiente de definir en Sprint 1.
+- Endpoint protegido: `GET /api/autenticacion/sesion`, devuelve `authUserId` y `email` del usuario verificado, con `Cache-Control: no-store`.
+- Inicio y cierre de sesion mediante Supabase Auth, sin endpoint de registro publico en la aplicacion.
+- Backend: valida el bearer token con `GET /auth/v1/user` de Supabase; rechaza tokens ausentes, invalidos y usuarios anonimos con `401`. Los fallos de red/configuracion retornan `503`.
+- Frontend: restaura sesion, renueva tokens y verifica el acceso con el backend antes de mostrar rutas privadas. Permite reintentar un fallo de conexion y limpia la cache al cerrar o cambiar de cuenta.
+- Cierre de sesion del navegador actual (`scope: local`); los JWT ya emitidos conservan su vigencia hasta expirar.
+- RLS protege las consultas por la API de Supabase. Prisma usa una conexion de servidor; la autorizacion de los endpoints que utilicen Prisma se aplica con el guard global.
+- Pruebas HTTP: `npm run test:e2e -- --runInBand` en backend, sin requerir base de datos ni credenciales reales.
+- Diagnostico de solo lectura: `npm run auth:check` en backend (Node.js 22+). Muestra configuracion de acceso, cantidad de cuentas y estado de RLS, sin mostrar credenciales.
 - Tablas: no aplica; se usa Supabase Auth sin tabla `profiles`.
 - Notas: backend validara JWT emitido por Supabase Auth. El registro público debe estar desactivado en Supabase.
-- Estado: pendiente.
+- Estado: implementado y validado localmente; pendiente integracion por Pull Request.
 
 ### pacientes
 - Funcion: registro, datos y busqueda de pacientes.
@@ -613,3 +650,5 @@ Tambien se recomienda proteger `develop` para evitar commits directos y mantener
 | 2026-10-12 | Sprint 0 | Se creo la estructura base del backend NestJS, frontend React, Prisma, RLS inicial, variables de entorno, Git, CI y validaciones locales. |
 | 2026-10-13 | Sprint 0 | Se completo la configuracion inicial real con Supabase, migracion Prisma, RLS inicial y validaciones locales. |
 | 2026-10-13 | Fuera de sprint | Cambio de requisito antes de iniciar Sprint 1: sistema de usuario unico, sin tabla `profiles`, sin roles y con RLS simple para usuarios autenticados. |
+| 2026-10-14 | Sprint 1 | Se implementaron login, sesion persistente, renovacion de token, rutas protegidas, cierre de sesion y endpoint verificado por Supabase Auth. Se agregaron pruebas HTTP y de frontend, diagnostico de solo lectura y verificacion real de RLS. Se verifico registro publico desactivado y una cuenta confirmada. Pendiente prueba manual e integracion por PR antes del cierre. |
+| 2026-10-14 | Sprint 1 | El usuario confirmo la prueba real de acceso, persistencia al recargar y cierre de sesion. Pasaron 27 pruebas (1 unitaria backend, 17 HTTP backend y 9 frontend), ambas compilaciones y la revision del login en navegador. Pendiente integracion por PR y CI para cerrar formalmente el sprint. |

@@ -1,5 +1,7 @@
-import { CalendarDays, ClipboardList, FileBarChart, LayoutDashboard, Package, Receipt, Stethoscope, UserRound, WalletCards } from 'lucide-react';
+import { CalendarDays, ClipboardList, FileBarChart, LayoutDashboard, Package, LogOut, Stethoscope, UserRound, WalletCards } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
+import { useState } from 'react';
+import { useAuth } from '../auth/AuthProvider';
 
 const navigation = [
   { to: '/panel', label: 'Panel', icon: LayoutDashboard },
@@ -9,11 +11,22 @@ const navigation = [
   { to: '/tratamientos', label: 'Tratamientos', icon: Stethoscope },
   { to: '/pagos', label: 'Pagos', icon: WalletCards },
   { to: '/inventario', label: 'Inventario', icon: Package },
-  { to: '/reportes', label: 'Reportes', icon: FileBarChart },
-  { to: '/login', label: 'Sesion', icon: Receipt }
+  { to: '/reportes', label: 'Reportes', icon: FileBarChart }
 ];
 
 export function AppShell() {
+  const { user, signOut } = useAuth();
+  const [closing, setClosing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSignOut() {
+    setClosing(true);
+    setError(null);
+    try { await signOut(); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'No se pudo cerrar la sesión.'); }
+    finally { setClosing(false); }
+  }
+
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="Navegacion principal">
@@ -34,6 +47,13 @@ export function AppShell() {
             );
           })}
         </nav>
+        <div className="sidebar-session">
+          <p className="session-email">{user?.email}</p>
+          <button className="secondary-button logout-button" disabled={closing} onClick={() => { void handleSignOut(); }}>
+            <LogOut aria-hidden="true" size={18} />{closing ? 'Cerrando…' : 'Cerrar sesión'}
+          </button>
+          {error && <p className="form-error" role="alert">{error}</p>}
+        </div>
       </aside>
 
       <main className="main-content">

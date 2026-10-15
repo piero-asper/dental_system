@@ -6,10 +6,10 @@
 - ✅ Terminado
 
 ## Sprint actual
-- Sprint: Sprint 0
-- Estado: ✅ Terminado
+- Sprint: Sprint 1
+- Estado: 🟨 En curso
 - Duración estimada: 2 semanas
-- Objetivo: definir la base funcional, tecnica y documental del sistema antes de iniciar la implementacion.
+- Objetivo: habilitar acceso con Supabase Auth, sesion persistente y proteccion de frontend y backend para el usuario unico.
 
 ## Sprint 0 - Requisitos, arquitectura inicial y preparacion
 - ✅ Paso 1: definir requisitos funcionales, requisitos no funcionales e historias de usuario por módulo.
@@ -27,11 +27,13 @@
 - ✅ 2026-10-13: cambio de requisito antes de iniciar Sprint 1. El sistema pasa a usuario único, sin tabla `profiles`, sin roles y con RLS simple para usuarios autenticados.
 
 ## Sprint 1 - autenticacion
-- ⬜ Desactivar registro público en Supabase y crear el usuario manualmente.
-- ⬜ Backend: guard que valida el JWT de Supabase.
-- ⬜ RLS simple: solo usuarios autenticados.
-- ⬜ Frontend: login, sesión y rutas protegidas.
-- ⬜ Pruebas y Swagger.
+- ✅ Registro publico desactivado, acceso anonimo desactivado y una cuenta confirmada creada manualmente (verificado en Supabase).
+- ✅ Backend: guard que verifica el token con Supabase Auth y endpoint `GET /api/autenticacion/sesion`.
+- ✅ RLS simple: las 14 tablas tienen RLS activo y sin permisos directos para `anon`, verificado en el proyecto real.
+- ✅ Frontend: login, sesión persistente, renovacion de token, rutas protegidas y cierre de sesion.
+- ✅ Pruebas automatizadas de acceso y documentacion Swagger del endpoint de sesion.
+- ✅ Prueba manual confirmada por el usuario: acceso con cuenta real, sesion al recargar, cierre de sesion y bloqueo de rutas privadas.
+- ⬜ Integrar los cambios mediante Pull Request y comprobar el CI antes del cierre del sprint.
 
 ## Sprint 2 - pacientes
 - ⬜ Registro de pacientes.

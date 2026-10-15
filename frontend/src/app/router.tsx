@@ -9,6 +9,7 @@ import { InventarioPage } from '@/features/inventario/pages/InventarioPage';
 import { PanelPage } from '@/features/panel/pages/PanelPage';
 import { ReportesPage } from '@/features/reportes/pages/ReportesPage';
 import { AppShell } from '@/shared/components/AppShell';
+import { ProtectedRoute } from '@/shared/auth/ProtectedRoute';
 
 export const router = createBrowserRouter([
   {
@@ -16,19 +17,23 @@ export const router = createBrowserRouter([
     element: <LoginPage />
   },
   {
-    path: '/',
-    element: <AppShell />,
-    children: [
-      { index: true, element: <Navigate to="/panel" replace /> },
-      { path: 'panel', element: <PanelPage /> },
-      { path: 'pacientes', element: <PacientesPage /> },
-      { path: 'citas', element: <CitasPage /> },
-      { path: 'historias-clinicas', element: <HistoriasClinicasPage /> },
-      { path: 'tratamientos', element: <TratamientosPage /> },
-      { path: 'pagos', element: <PagosPage /> },
-      { path: 'inventario', element: <InventarioPage /> },
-      { path: 'reportes', element: <ReportesPage /> }
-    ]
+    element: <ProtectedRoute />,
+    children: [{
+      path: '/',
+      element: <AppShell />,
+      children: [
+        { index: true, element: <Navigate to="/panel" replace /> },
+        { path: 'panel', element: <PanelPage /> },
+        { path: 'pacientes', element: <PacientesPage /> },
+        { path: 'citas', element: <CitasPage /> },
+        { path: 'historias-clinicas', element: <HistoriasClinicasPage /> },
+        { path: 'tratamientos', element: <TratamientosPage /> },
+        { path: 'pagos', element: <PagosPage /> },
+        { path: 'inventario', element: <InventarioPage /> },
+        { path: 'reportes', element: <ReportesPage /> },
+        { path: '*', element: <Navigate to="/panel" replace /> }
+      ]
+    }]
   }
 ]);
 

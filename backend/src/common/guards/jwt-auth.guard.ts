@@ -1,16 +1,15 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-import { verify } from 'jsonwebtoken';
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { AuthUser } from '../types/auth-user.type';
 
-type JwtPayload = {
-  sub: string;
+type SupabaseUser = {
+  id: string;
   email?: string;
-  app_metadata?: Record<string, unknown>;
-  user_metadata?: Record<string, unknown>;
+  role: string;
+  is_anonymous?: boolean;
 };
 
 @Injectable()
@@ -20,7 +19,7 @@ export class JwtAuthGuard implements CanActivate {
     private readonly configService: ConfigService
   ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass()
@@ -37,23 +36,46 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Token de autenticacion requerido.');
     }
 
-    const jwtSecret = this.configService.get<string>('SUPABASE_JWT_SECRET');
+    const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
+    const apiKey = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!jwtSecret) {
-      throw new UnauthorizedException('Configuracion de autenticacion incompleta.');
+    if (!supabaseUrl || !apiKey) {
+      throw new ServiceUnavailableException('Servicio de autenticacion no configurado.');
     }
 
+    let response: globalThis.Response;
     try {
-      const payload = verify(token, jwtSecret) as JwtPayload;
-      request.user = {
-        authUserId: payload.sub,
-        email: payload.email
-      };
-
-      return true;
+      // Supabase verifies the token with the project's current signing keys.
+      // The service key is only an API key; the user's token is the bearer credential.
+      response = await fetch(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/user`, {
+        headers: { apikey: apiKey, Authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
+      });
     } catch {
+      throw new ServiceUnavailableException('No se pudo verificar la sesion. Intenta nuevamente.');
+    }
+
+    if (response.status === 401 || response.status === 403) {
       throw new UnauthorizedException('Token de autenticacion invalido.');
     }
+
+    if (!response.ok) {
+      throw new ServiceUnavailableException('No se pudo verificar la sesion. Intenta nuevamente.');
+    }
+
+    let user: SupabaseUser;
+    try {
+      user = await response.json() as SupabaseUser;
+    } catch {
+      throw new ServiceUnavailableException('Respuesta de autenticacion invalida.');
+    }
+
+    if (!user || typeof user.id !== 'string' || !user.id || user.role !== 'authenticated' || user.is_anonymous) {
+      throw new UnauthorizedException('Cuenta de acceso invalida.');
+    }
+
+    request.user = { authUserId: user.id, email: user.email };
+    return true;
   }
 
   private extractBearerToken(request: Request): string | undefined {
@@ -63,8 +85,7 @@ export class JwtAuthGuard implements CanActivate {
       return undefined;
     }
 
-    const [type, token] = authorization.split(' ');
-    return type === 'Bearer' ? token : undefined;
+    return /^Bearer ([^\s]+)$/i.exec(authorization)?.[1];
   }
 }
 
