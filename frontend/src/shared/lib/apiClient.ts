@@ -1,26 +1,35 @@
 import { env } from './env';
+import { supabase } from './supabaseClient';
+
+export class ApiError extends Error {
+  constructor(public readonly status: number) {
+    super(`API error ${status}`);
+  }
+}
 
 type ApiOptions = RequestInit & {
   token?: string;
 };
 
 export async function apiClient<TResponse>(path: string, options: ApiOptions = {}): Promise<TResponse> {
-  const headers = new Headers(options.headers);
+  const { token: providedToken, ...requestOptions } = options;
+  const token = providedToken ?? (await supabase?.auth.getSession())?.data.session?.access_token;
+  const headers = new Headers(requestOptions.headers);
   headers.set('Content-Type', 'application/json');
 
-  if (options.token) {
-    headers.set('Authorization', `Bearer ${options.token}`);
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
   }
 
   const response = await fetch(`${env.apiUrl}${path}`, {
-    ...options,
+    ...requestOptions,
     headers
   });
 
   if (!response.ok) {
-    throw new Error(`API error ${response.status}`);
+    throw new ApiError(response.status);
   }
 
-  return response.json() as Promise<TResponse>;
+  return response.status === 204 ? undefined as TResponse : response.json() as Promise<TResponse>;
 }
 

@@ -4,7 +4,6 @@ const requiredVariables = [
   'DATABASE_URL',
   'DIRECT_URL',
   'SUPABASE_URL',
-  'SUPABASE_JWT_SECRET',
   'SUPABASE_SERVICE_ROLE_KEY'
 ] as const;
 
