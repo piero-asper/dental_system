@@ -7,7 +7,7 @@
 
 ## Sprint actual
 - Sprint: Sprint 1
-- Estado: 🟨 En curso
+- Estado: ✅ Terminado
 - Duración estimada: 2 semanas
 - Objetivo: habilitar acceso con Supabase Auth, sesion persistente y proteccion de frontend y backend para el usuario unico.
 
@@ -33,7 +33,7 @@
 - ✅ Frontend: login, sesión persistente, renovacion de token, rutas protegidas y cierre de sesion.
 - ✅ Pruebas automatizadas de acceso y documentacion Swagger del endpoint de sesion.
 - ✅ Prueba manual confirmada por el usuario: acceso con cuenta real, sesion al recargar, cierre de sesion y bloqueo de rutas privadas.
-- ⬜ Integrar los cambios mediante Pull Request y comprobar el CI antes del cierre del sprint.
+- ✅ Entrega v0.1.0 mediante Pull Requests de `feature/s1-autenticacion` hacia `develop` y de `develop` hacia `main`, con CI obligatorio antes de cada integracion.
 
 ## Sprint 2 - pacientes
 - ⬜ Registro de pacientes.

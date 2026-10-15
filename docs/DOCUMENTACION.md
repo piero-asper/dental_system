@@ -198,9 +198,12 @@ Tambien se recomienda proteger `develop` para evitar commits directos y mantener
 Referencia de configuracion: https://supabase.com/docs/guides/auth/general-configuration
 
 ### Entrega de cambios del Sprint 1
-Rama actual: `feature/s1-autenticacion`, creada desde `develop` para el flujo completo de acceso.
+Version de entrega: `v0.1.0` (Sprint 1: autenticacion).
 
-Despues de aprobar la prueba manual y revisar los archivos modificados:
+La implementacion y la documentacion de cierre se entregan en el [PR #2](https://github.com/piero-asper/dental_system/pull/2), desde `feature/s1-autenticacion` hacia `develop`. La promocion a `main` se realiza mediante un segundo Pull Request desde `develop`, comprobando Backend y Frontend en cada integracion. La etiqueta anotada `v0.1.0` identifica el commit de cierre en `main`.
+
+Comandos utilizados para guardar y subir la implementacion:
+
 ```bash
 git status
 git add .github/workflows/ci.yml backend frontend docs/SPRINT.md docs/DOCUMENTACION.md
@@ -384,7 +387,7 @@ Si GitHub ya elimino la rama remota, omitir el ultimo comando. Cerrar el sprint 
 - Diagnostico de solo lectura: `npm run auth:check` en backend (Node.js 22+). Muestra configuracion de acceso, cantidad de cuentas y estado de RLS, sin mostrar credenciales.
 - Tablas: no aplica; se usa Supabase Auth sin tabla `profiles`.
 - Notas: backend validara JWT emitido por Supabase Auth. El registro público debe estar desactivado en Supabase.
-- Estado: implementado y validado localmente; pendiente integracion por Pull Request.
+- Estado: terminado para la entrega `v0.1.0`, con pruebas automatizadas, validacion manual y flujo de integracion por Pull Request.
 
 ### pacientes
 - Funcion: registro, datos y busqueda de pacientes.
@@ -652,3 +655,4 @@ Si GitHub ya elimino la rama remota, omitir el ultimo comando. Cerrar el sprint 
 | 2026-10-13 | Fuera de sprint | Cambio de requisito antes de iniciar Sprint 1: sistema de usuario unico, sin tabla `profiles`, sin roles y con RLS simple para usuarios autenticados. |
 | 2026-10-14 | Sprint 1 | Se implementaron login, sesion persistente, renovacion de token, rutas protegidas, cierre de sesion y endpoint verificado por Supabase Auth. Se agregaron pruebas HTTP y de frontend, diagnostico de solo lectura y verificacion real de RLS. Se verifico registro publico desactivado y una cuenta confirmada. Pendiente prueba manual e integracion por PR antes del cierre. |
 | 2026-10-14 | Sprint 1 | El usuario confirmo la prueba real de acceso, persistencia al recargar y cierre de sesion. Pasaron 27 pruebas (1 unitaria backend, 17 HTTP backend y 9 frontend), ambas compilaciones y la revision del login en navegador. Pendiente integracion por PR y CI para cerrar formalmente el sprint. |
+| 2026-10-14 | Sprint 1 | Cierre de la entrega `v0.1.0`: implementacion y documentacion en PR #2 hacia `develop`, promocion por PR de `develop` a `main`, CI requerido y etiqueta anotada sobre el commit de cierre. El siguiente sprint es pacientes. |
