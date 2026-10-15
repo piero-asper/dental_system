@@ -6,6 +6,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { validateEnv } from './config/env.validation';
+import { AutenticacionController } from './modulos/autenticacion/autenticacion.controller';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { validateEnv } from './config/env.validation';
     }),
     PrismaModule
   ],
-  controllers: [AppController],
+  controllers: [AppController, AutenticacionController],
   providers: [
     {
       provide: APP_FILTER,
