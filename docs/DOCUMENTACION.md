@@ -228,6 +228,8 @@ Si GitHub ya elimino la rama remota, omitir el ultimo comando. Cerrar el sprint 
 - Crear migraciones: `npm run prisma:migrate`.
 - Ejecutar desarrollo: `npm run start:dev`.
 - Ejecutar pruebas: `npm test -- --runInBand`.
+- Ejecutar pruebas HTTP sin base de datos: `npm run test:e2e -- --runInBand`.
+- Verificar pacientes contra PostgreSQL real: `npm run test:db` (requiere `.env` local, transaccion revertida y comprobacion de que no quedan datos de prueba).
 - Compilar: `npm run build`.
 - Swagger local: `http://localhost:3000/api/docs`.
 - Salud API: `GET http://localhost:3000/api/health`.
@@ -249,8 +251,9 @@ Si GitHub ya elimino la rama remota, omitir el ultimo comando. Cerrar el sprint 
 
 ### pacientes
 - Registrar pacientes con datos personales, contacto y datos administrativos.
+- El formulario solicita solo nombres y apellidos obligatorios y telefono opcional, segun el alcance confirmado por el usuario. No solicita DNI, fecha de nacimiento, sexo, correo, direccion ni contacto de emergencia.
 - Editar datos de pacientes existentes.
-- Buscar pacientes por nombre, documento, telefono o correo.
+- Buscar pacientes por nombres, apellidos o telefono.
 - Consultar detalle del paciente.
 - Proteger el acceso con autenticacion obligatoria.
 
@@ -391,10 +394,56 @@ Si GitHub ya elimino la rama remota, omitir el ultimo comando. Cerrar el sprint 
 
 ### pacientes
 - Funcion: registro, datos y busqueda de pacientes.
-- Endpoints: pendiente de definir en Sprint 2.
+- Endpoints protegidos: `GET /api/pacientes`, `POST /api/pacientes`, `GET /api/pacientes/:id` y `PATCH /api/pacientes/:id`.
+- Listado: `q` busca por palabras en nombres, apellidos o telefono; nombres/apellidos ignoran mayusculas. `estado` acepta `todos`, `activos` e `inactivos`; `pagina` comienza en 1 y `tamanoPagina` admite de 1 a 100 (20 por defecto). Respuesta: `items`, `total`, `pagina`, `tamanoPagina` y `totalPaginas`.
+- Obligatorios al crear: `nombres` y `apellidos` (hasta 100 caracteres cada uno). `telefono` es opcional y una cadena vacia se guarda como `null`.
+- No se aceptan ni se exponen DNI, fecha de nacimiento, sexo, correo, direccion o contactos de emergencia. Las columnas previas del esquema permanecen para conservar informacion que ya exista; se omiten en la seleccion del repositorio. Los nuevos pacientes se guardan internamente como `SIN_DOCUMENTO`, sin numero de documento.
+- Cada paciente se distingue por UUID. Se permiten homonimos; nombres y apellidos no tienen restriccion de unicidad.
+- `PATCH` conserva los campos omitidos y admite `telefono: null` para limpiarlo; no acepta nombres, apellidos o estado activo nulos. `activo: false` desactiva al paciente conservando su ficha y relaciones.
+- Respuestas: `400` para validaciones, `401` sin sesion valida y `404` si no existe la ficha. Los GET envian `Cache-Control: no-store`.
+- Arquitectura: controller -> service -> repository -> Prisma. No se modifico el esquema inicial ni se requieren nuevas migraciones. El repositorio excluye `deleted_at` no nulo y no carga relaciones clinicas ni financieras.
+- Frontend: listado y filtros en `/pacientes`, registro en `/pacientes/nuevo`, ficha en `/pacientes/:id` y edicion en `/pacientes/:id/editar`. El estado se aplica al seleccionarlo; el texto se busca automaticamente tras 300 ms sin escribir, sin boton Buscar. Ambos reinician la paginacion al cambiar el filtro. Enter permite aplicar el texto inmediatamente. Guardar una edicion vuelve al listado conservando filtros y pagina, con confirmacion de guardado. Un registro nuevo abre su ficha. Muestra estados de carga/error/vacio y permite reintentar.
+- El cliente API adjunta el token de sesion. Ante `401` cierra la sesion local; la proteccion de rutas vuelve a exigir acceso. Un error de guardado conserva los datos escritos para corregirlos.
 - Tablas: `pacientes`.
-- Notas: informacion sensible con acceso controlado.
-- Estado: pendiente.
+- Pruebas: servicios, validacion y flujo HTTP con guard real y repositorio simulado, flujos de frontend y repositorio contra PostgreSQL dentro de una transaccion revertida. El CI ejecuta pruebas unitarias, HTTP y frontend; la prueba de PostgreSQL se ejecuta explicitamente con credenciales locales.
+- Estado: terminado para la entrega `v0.2.0`. El usuario confirmo el funcionamiento correcto del modulo; pruebas automatizadas y compilaciones locales aprobadas, con CI obligatorio en los Pull Requests de integracion.
+
+#### Verificacion manual de pacientes
+1. Iniciar sesion y abrir Pacientes. Consultar el listado o su estado vacio.
+2. Abrir Nuevo paciente y comprobar que solo aparecen nombres, apellidos y telefono; nombres y apellidos son obligatorios.
+3. Para verificar un guardado manual, utilizar un paciente autorizado por la clinica. No se insertan registros ficticios permanentes en la base compartida durante las pruebas automatizadas.
+4. Abrir la ficha, editar contacto, borrar un campo opcional y comprobar que el resto de los datos se conserva. Al marcar inactivo debe conservarse la ficha y aparecer con el filtro Inactivos.
+5. Escribir nombre, apellido o telefono: el listado se filtra automaticamente tras una pausa de 300 ms. Cambiar Estado aplica el filtro inmediatamente. Limpiar restablece el listado; guardar una edicion vuelve conservando busqueda, estado y pagina.
+6. Los errores de guardado deben conservar los datos escritos para poder corregir o reintentar.
+
+#### Entrega de cambios del Sprint 2
+Version de entrega: `v0.2.0` (Sprint 2: pacientes). Backend, frontend y Swagger identifican esta version.
+
+Rama de implementacion: `feature/s2-pacientes`, creada desde `develop` para el modulo completo. La entrega se integra por PR hacia `develop` y se promueve por PR de `develop` a `main`, con Backend y Frontend del CI aprobados. La etiqueta anotada `v0.2.0` identifica el commit de cierre en `main`.
+```bash
+git status
+git add .github/workflows/ci.yml backend frontend docs/SPRINT.md docs/DOCUMENTACION.md
+git diff --cached --name-only
+git commit -m "feat(pacientes): agregar registro fichas edicion y busqueda"
+git push -u origin feature/s2-pacientes
+```
+Revisar que no se preparen `.env` reales; crear PR `feature/s2-pacientes` -> `develop` y exigir Backend y Frontend aprobados. Despues del merge:
+```bash
+git checkout develop
+git pull origin develop
+git branch -d feature/s2-pacientes
+git push origin --delete feature/s2-pacientes
+```
+El cierre formal sigue el PR `develop` -> `main`, CI aprobado y etiqueta de version de las reglas generales; no se hace push directo de cambios de codigo a esas ramas.
+```bash
+git checkout main
+git pull origin main
+git tag -a v0.2.0 -m "Sprint 2: pacientes"
+git push origin v0.2.0
+git checkout develop
+git merge --ff-only main
+git push origin develop
+```
 
 ### citas
 - Funcion: agenda, reserva, reprogramacion y cancelacion.
@@ -460,7 +509,7 @@ Si GitHub ya elimino la rama remota, omitir el ultimo comando. Cerrar el sprint 
 - Modulo: pacientes.
 - Campos: `id`, `tipo_documento`, `numero_documento`, `nombres`, `apellidos`, `fecha_nacimiento`, `sexo`, `telefono`, `email`, `direccion`, `contacto_emergencia_nombre`, `contacto_emergencia_telefono`, `activo`, `created_at`, `updated_at`, `deleted_at`.
 - Relaciones: tiene citas, historia clinica, presupuestos, pagos y comprobantes.
-- Notas: `numero_documento` debe ser unico cuando exista.
+- Notas: el formulario actual utiliza nombres, apellidos y telefono. Los campos opcionales originales se conservan en el esquema por compatibilidad; `numero_documento` sigue siendo unico junto con su tipo cuando exista, pero el modulo actual no lo solicita ni lo expone.
 
 #### citas
 - Modulo: citas.
@@ -610,7 +659,7 @@ Si GitHub ya elimino la rama remota, omitir el ultimo comando. Cerrar el sprint 
 ## Reglas de datos
 - El registro publico de usuarios debe permanecer desactivado en Supabase.
 - El usuario operativo se crea manualmente desde el panel de Supabase.
-- Un paciente no debe duplicarse por el mismo `tipo_documento` y `numero_documento`.
+- Si un registro anterior contiene documento, se conserva la restriccion de unicidad de `tipo_documento` y `numero_documento`. Los registros nuevos no usan documento y se identifican por UUID; se permiten nombres iguales.
 - La eliminacion de pacientes sera logica mediante `deleted_at`.
 - No se pueden crear citas con `fecha_fin` menor o igual a `fecha_inicio`.
 - No se pueden crear o reprogramar citas que crucen horarios activos en la agenda.
@@ -656,3 +705,5 @@ Si GitHub ya elimino la rama remota, omitir el ultimo comando. Cerrar el sprint 
 | 2026-10-14 | Sprint 1 | Se implementaron login, sesion persistente, renovacion de token, rutas protegidas, cierre de sesion y endpoint verificado por Supabase Auth. Se agregaron pruebas HTTP y de frontend, diagnostico de solo lectura y verificacion real de RLS. Se verifico registro publico desactivado y una cuenta confirmada. Pendiente prueba manual e integracion por PR antes del cierre. |
 | 2026-10-14 | Sprint 1 | El usuario confirmo la prueba real de acceso, persistencia al recargar y cierre de sesion. Pasaron 27 pruebas (1 unitaria backend, 17 HTTP backend y 9 frontend), ambas compilaciones y la revision del login en navegador. Pendiente integracion por PR y CI para cerrar formalmente el sprint. |
 | 2026-10-14 | Sprint 1 | Cierre de la entrega `v0.1.0`: implementacion y documentacion en PR #2 hacia `develop`, promocion por PR de `develop` a `main`, CI requerido y etiqueta anotada sobre el commit de cierre. El siguiente sprint es pacientes. |
+| 2026-10-14 | Sprint 2 | Se implementaron endpoints protegidos, registro, edicion, ficha, filtros y paginacion con nombres y apellidos obligatorios y telefono opcional, segun el alcance confirmado en la imagen del usuario. Se agregaron validaciones, Swagger y pruebas de servicios/HTTP/frontend y PostgreSQL real con rollback. Pendiente revision visual e integracion antes de cerrar. |
+| 2026-10-14 | Sprint 2 | El usuario confirmo el funcionamiento correcto del modulo. Cierre de entrega `v0.2.0`: busqueda automatica tras 300 ms, estado inmediato y retorno al listado al guardar una edicion, documentacion actualizada y version alineada en backend/frontend/Swagger. Validacion: 71 pruebas locales, incluidas las pruebas de PostgreSQL real con rollback; integracion por PR con CI obligatorio. El siguiente sprint es citas. |
