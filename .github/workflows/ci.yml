@@ -36,7 +36,7 @@ jobs:
       - name: Run tests
         run: npm test -- --runInBand
 
-      - name: Run authentication HTTP tests
+      - name: Run HTTP tests
         run: npm run test:e2e -- --runInBand
 
       - name: Build

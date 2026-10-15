@@ -168,3 +168,71 @@ button:disabled { opacity: .65; cursor: wait; }
     padding: 24px;
   }
 }
+
+.patients-page { max-width: 1120px; margin: 0 auto; }
+.page-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; }
+.button-icon { display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+.surface { border: 1px solid #dce3e7; border-radius: 10px; background: #fff; margin-top: 24px; }
+.patient-search { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; padding: 20px; }
+.patients-page label { display: flex; flex-direction: column; gap: 8px; font-size: 14px; font-weight: 600; }
+.patients-page :is(input:not([type="checkbox"]), select, textarea) {
+  width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #a7b7bf;
+  border-radius: 6px; background: #fff; font: inherit; font-weight: 400; color: #172026;
+}
+.patients-page :is(input, select, textarea):disabled { background: #f5f7f8; }
+.patients-page textarea { resize: vertical; }
+.patients-page :is(select, textarea):focus-visible { outline: 3px solid #0f766e; outline-offset: 3px; }
+.search-field { flex: 1 1 300px; }
+.search-input { position: relative; display: flex; align-items: center; }
+.search-input svg { position: absolute; left: 12px; color: #53616b; pointer-events: none; }
+.search-input input { padding-left: 40px !important; }
+.patient-search > label:not(.search-field) { min-width: 130px; }
+.state-panel { padding: 24px; }
+.state-panel p:first-child { margin-top: 0; }
+.list-summary { padding: 18px 22px; color: #53616b; font-size: 14px; border-bottom: 1px solid #e7ecef; }
+.table-scroll { overflow-x: auto; }
+.patients-table { border-collapse: collapse; width: 100%; text-align: left; }
+.patients-table :is(td, th) { padding: 16px 22px; border-bottom: 1px solid #e7ecef; vertical-align: middle; }
+.patients-table th { background: #f8fafb; color: #53616b; font-weight: 600; font-size: 13px; }
+.patients-table td { font-size: 14px; }
+.patients-table tbody tr:last-child td { border-bottom: 0; }
+.patients-table tbody tr:hover { background: #f5fbf9; }
+.patient-name { color: #172026; font-weight: 600; }
+.patient-name:hover, .text-link:hover { text-decoration: underline; }
+.text-link { color: #0f766e; font-weight: 600; white-space: nowrap; }
+.status-badge { display: inline-block; border-radius: 20px; padding: 4px 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.status-badge.active { background: #e7f5f2; color: #116052; }
+.status-badge.inactive { background: #eef0f2; color: #53616b; }
+.empty-state { text-align: center; padding: 44px 20px; color: #53616b; }
+.empty-state svg { color: #0f766e; }
+.empty-state h2 { font-size: 20px; color: #172026; margin: 12px 0; }
+.pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 22px; border-top: 1px solid #e7ecef; font-size: 14px; }
+.back-link { display: inline-block; color: #0f766e; font-size: 14px; margin-bottom: 20px; }
+.back-link:hover { text-decoration: underline; }
+.patient-form { padding: 28px; }
+.form-intro, .field-hint { color: #53616b; font-size: 13px; font-weight: 400; line-height: 1.5; }
+.form-intro { margin: 0 0 26px; }
+.field-hint { align-self: center; }
+.patient-form fieldset { border: 0; padding: 0; margin: 0 0 28px; min-width: 0; }
+.patient-form legend { font-size: 17px; font-weight: 650; margin-bottom: 18px; padding: 0; }
+.form-grid, .details-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 24px; }
+.full-width { grid-column: 1 / -1; }
+.patients-page .checkbox-label { display: flex; flex-direction: row; align-items: center; gap: 10px; }
+.checkbox-label input { width: 18px; height: 18px; accent-color: #0f766e; }
+.form-actions { display: flex; flex-wrap: wrap; gap: 12px; border-top: 1px solid #e7ecef; padding-top: 24px; margin-top: 24px; }
+.form-actions a { display: inline-flex; align-items: center; justify-content: center; }
+.patient-details { padding: 4px 28px; }
+.patient-details section { padding: 22px 0; border-bottom: 1px solid #e7ecef; }
+.patient-details section:last-child { border-bottom: 0; }
+.patient-details h2 { font-size: 17px; margin: 0 0 20px; }
+.details-grid { margin: 0; }
+.details-grid dt { font-size: 13px; color: #53616b; margin-bottom: 6px; }
+.details-grid dd { margin: 0; font-size: 15px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.success-message { color: #116052; background: #e7f5f2; padding: 14px 20px; border-radius: 8px; }
+@media (max-width: 600px) {
+  .form-grid, .details-grid { grid-template-columns: 1fr; gap: 18px; }
+  .patient-form { padding: 20px; }
+  .patient-details { padding: 0 20px; }
+  .patient-search > button { flex: 1; }
+  .pagination { flex-wrap: wrap; justify-content: center; }
+}
