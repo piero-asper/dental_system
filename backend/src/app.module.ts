@@ -7,6 +7,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { validateEnv } from './config/env.validation';
 import { AutenticacionController } from './modulos/autenticacion/autenticacion.controller';
+import { PacientesModule } from './modulos/pacientes/pacientes.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { AutenticacionController } from './modulos/autenticacion/autenticacion.c
       envFilePath: '.env',
       validate: validateEnv
     }),
-    PrismaModule
+    PrismaModule,
+    PacientesModule
   ],
   controllers: [AppController, AutenticacionController],
   providers: [

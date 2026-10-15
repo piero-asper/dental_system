@@ -6,10 +6,10 @@
 - ✅ Terminado
 
 ## Sprint actual
-- Sprint: Sprint 1
+- Sprint: Sprint 2
 - Estado: ✅ Terminado
 - Duración estimada: 2 semanas
-- Objetivo: habilitar acceso con Supabase Auth, sesion persistente y proteccion de frontend y backend para el usuario unico.
+- Objetivo: gestionar registro, edicion, consulta y busqueda de pacientes con nombres, apellidos y telefono, validaciones y autenticacion obligatoria.
 
 ## Sprint 0 - Requisitos, arquitectura inicial y preparacion
 - ✅ Paso 1: definir requisitos funcionales, requisitos no funcionales e historias de usuario por módulo.
@@ -36,12 +36,14 @@
 - ✅ Entrega v0.1.0 mediante Pull Requests de `feature/s1-autenticacion` hacia `develop` y de `develop` hacia `main`, con CI obligatorio antes de cada integracion.
 
 ## Sprint 2 - pacientes
-- ⬜ Registro de pacientes.
-- ⬜ Edicion de datos personales y contacto.
-- ⬜ Busqueda y filtrado.
-- ⬜ Validaciones y DTOs.
-- ⬜ Pruebas unitarias y e2e del flujo critico.
-- ⬜ Documentacion Swagger.
+- ✅ Registro con nombres y apellidos obligatorios y telefono opcional.
+- ✅ Edicion de datos personales y contacto; activar/inactivar sin borrar la ficha.
+- ✅ Consulta de ficha, busqueda por nombre, apellidos o telefono, filtro de estado y paginacion.
+- ✅ Validaciones y DTOs; campos obligatorios sin espacios vacios y telefono opcional limpiable.
+- ✅ Pruebas unitarias, HTTP y frontend; verificacion del repositorio con PostgreSQL real y rollback de los datos de prueba.
+- ✅ Documentacion Swagger de los cuatro endpoints protegidos.
+- ✅ Prueba manual confirmada por el usuario: el modulo de pacientes funciona correctamente, con busqueda automatica, estado inmediato y retorno al listado al guardar una edicion.
+- ✅ Entrega v0.2.0 mediante Pull Requests de `feature/s2-pacientes` hacia `develop` y de `develop` hacia `main`, con CI obligatorio antes de cada integracion.
 
 ## Sprint 3 - citas
 - ⬜ Agenda por odontologo.
@@ -105,6 +107,7 @@
 - ✅ Crear el proyecto real en Supabase desde la cuenta de la clinica y copiar valores reales en `.env` local.
 - ✅ Ejecutar `npx prisma migrate dev` cuando `DATABASE_URL` y `DIRECT_URL` reales esten configurados.
 - ✅ Ejecutar `backend/scripts/supabase-rls.sql` en Supabase despues de crear las tablas.
-- ⬜ Confirmar datos obligatorios de pacientes segun normativa/localidad de la clinica.
+- ✅ Datos operativos confirmados por el usuario: nombres y apellidos obligatorios; telefono opcional. Se omiten DNI, fecha de nacimiento, sexo, correo, direccion y contacto de emergencia.
+- ⬜ Revisar requisitos legales de datos y conservacion con la clinica antes de produccion.
 - ⬜ Definir estrategia de numeracion de comprobantes antes del modulo pagos.
 - ⬜ Revisar vulnerabilidades reportadas por `npm audit` en dependencias transitivas antes de produccion.
