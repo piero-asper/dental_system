@@ -8,6 +8,8 @@ Trabajo actual: **FE-8, rediseño visual del panel**, a partir de la referencia 
 
 **Para retomar:** continuar la [apariencia del sistema](APARIENCIA_PENDIENTE.md). Los colores actuales no fueron aceptados. La última muestra utiliza `#0C4A6E`, `#2B6CB0`, `#1C3F72` y `#EBF8FF`, con tarjetas blancas; sigue pendiente de aprobación y no está aplicada al código. Guardar este avance en GitHub no cierra el diseño ni los sprints pendientes.
 
+**Orden acordado para la próxima sesión:** el usuario pidió comenzar mañana por el entorno local con Podman (BE-9/FE-9). Primero comprobar que la máquina de Podman y Compose estén disponibles; después preparar y verificar el arranque conjunto del frontend React y el backend NestJS, manteniendo PostgreSQL y autenticación en Supabase. La configuración de contenedores todavía no está implementada. La apariencia de FE-8 se retomará después y conserva su aceptación pendiente.
+
 ## Alcance
 
 Mejoras de Pacientes, Citas e Historias clínicas y BI integrado en Panel/Reportes, según [el plan](PLAN_MEJORAS_BI.md). IA descartada. Se conserva una cuenta operativa, una agenda y los datos personales mínimos acordados.
