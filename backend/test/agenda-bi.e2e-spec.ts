@@ -1,0 +1,24 @@
+import { INestApplication,ValidationPipe } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import { APP_GUARD } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
+import { randomUUID } from 'node:crypto';
+import request=require('supertest');
+import { JwtAuthGuard } from '../src/common/guards/jwt-auth.guard';
+import { AgendaModule } from '../src/modulos/agenda/agenda.module';
+import { AgendaService } from '../src/modulos/agenda/agenda.service';
+import { BiModule } from '../src/modulos/bi/bi.module';
+import { BiService } from '../src/modulos/bi/bi.service';
+describe('Agenda y BI HTTP',()=>{
+  let app:INestApplication,fetchMock:jest.SpyInstance;const actor=randomUUID();
+  const agenda={configuracion:jest.fn(async()=>[]),configurar:jest.fn(async()=>({id:randomUUID()})),franjas:jest.fn(async()=>({configurada:false,franjas:[]})),bloquear:jest.fn(),cancelar:jest.fn()};
+  const bi={resumen:jest.fn(async()=>({indicadores:{nuevos:0}})),detalle:jest.fn(async()=>({items:[],total:0})),csv:jest.fn(()=>'Paciente,Fecha\r\n')};
+  beforeAll(async()=>{const module=await Test.createTestingModule({imports:[AgendaModule,BiModule],providers:[{provide:APP_GUARD,useClass:JwtAuthGuard},{provide:ConfigService,useValue:{get:(key:string)=>key==='SUPABASE_URL'?'https://example.supabase.co':'server-key'}}]}).overrideProvider(AgendaService).useValue(agenda).overrideProvider(BiService).useValue(bi).compile();app=module.createNestApplication();app.setGlobalPrefix('api');app.useGlobalPipes(new ValidationPipe({whitelist:true,forbidNonWhitelisted:true,transform:true}));await app.init();});
+  beforeEach(()=>{jest.clearAllMocks();fetchMock=jest.spyOn(globalThis,'fetch').mockImplementation(async()=>new Response(JSON.stringify({id:actor,role:'authenticated'})));});afterEach(()=>fetchMock.mockRestore());afterAll(()=>app.close());
+  it.each([['get','/api/agenda/configuracion'],['get','/api/agenda/disponibilidad'],['post','/api/agenda/configuracion'],['post','/api/agenda/bloqueos'],['patch',`/api/agenda/bloqueos/${randomUUID()}/cancelar`],['get','/api/bi/resumen'],['get','/api/bi/detalle'],['get','/api/bi/exportar']] as const)('protege %s %s',async(method,path)=>{await request(app.getHttpServer())[method](path).send({}).expect(401);expect(bi.resumen).not.toHaveBeenCalled();expect(agenda.configurar).not.toHaveBeenCalled();});
+  it('limita las consultas y propaga la cuenta al corte BI',async()=>{await request(app.getHttpServer()).get('/api/bi/resumen?desde=2026-01-01&hasta=2026-02-01').auth('token',{type:'bearer'}).expect(200);expect(bi.resumen).toHaveBeenCalledWith(expect.objectContaining({desde:'2026-01-01'}),actor);await request(app.getHttpServer()).get('/api/bi/resumen?desde=invalida&hasta=2026-02-01').auth('token',{type:'bearer'}).expect(400);});
+  it('rechaza SQL y campos inesperados en el detalle',async()=>{await request(app.getHttpServer()).get(`/api/bi/detalle?corte=${randomUUID()}&metrica=DROP%20TABLE&pagina=1`).auth('token',{type:'bearer'}).expect(400);expect(bi.detalle).not.toHaveBeenCalled();});
+  it('acepta el detalle de inasistencias iniciadas de la tasa',async()=>{await request(app.getHttpServer()).get(`/api/bi/detalle?corte=${randomUUID()}&metrica=inasistencias_iniciadas`).auth('token',{type:'bearer'}).expect(200);expect(bi.detalle).toHaveBeenCalledWith(expect.objectContaining({metrica:'inasistencias_iniciadas'}),actor);});
+  it('exporta con autenticación y cabeceras CSV',async()=>{const response=await request(app.getHttpServer()).get(`/api/bi/exportar?corte=${randomUUID()}&metrica=nuevos`).auth('token',{type:'bearer'}).expect(200);expect(response.headers['content-type']).toContain('text/csv');expect(response.headers['content-disposition']).toContain('attachment');});
+  it('valida días y horas antes de configurar',async()=>{await request(app.getHttpServer()).post('/api/agenda/configuracion').auth('token',{type:'bearer'}).send({vigenteDesde:'2026-01-01',intervalos:[{dia:7,inicio:'25:00',fin:'12:00'}]}).expect(400);expect(agenda.configurar).not.toHaveBeenCalled();});
+});

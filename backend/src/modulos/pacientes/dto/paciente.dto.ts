@@ -1,6 +1,6 @@
 import { PartialType, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Matches, Max, MaxLength, Min, ValidateIf } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsISO8601, IsNotEmpty, IsOptional, IsString, Matches, Max, MaxLength, Min, ValidateIf } from 'class-validator';
 
 const trim = ({ value }: { value: unknown }) => typeof value === 'string' ? value.trim() : value;
 const optionalText = ({ value }: { value: unknown }) => typeof value === 'string' ? value.trim() || null : value;
@@ -32,7 +32,9 @@ export class CrearPacienteDto {
   activo?: boolean;
 }
 
-export class EditarPacienteDto extends PartialType(CrearPacienteDto, { skipNullProperties: false }) {}
+export class EditarPacienteDto extends PartialType(CrearPacienteDto, { skipNullProperties: false }) {
+  @ApiProperty() @IsISO8601({ strict: true }) version!: string;
+}
 
 export class BuscarPacientesDto {
   @ApiPropertyOptional({ maxLength: 100, description: 'Nombres, apellidos o telefono. Ignora mayusculas.' })
@@ -45,6 +47,13 @@ export class BuscarPacientesDto {
   @ApiPropertyOptional({ enum: ['todos', 'activos', 'inactivos'], default: 'todos' })
   @IsIn(['todos', 'activos', 'inactivos'])
   estado: 'todos' | 'activos' | 'inactivos' = 'todos';
+
+  @ApiPropertyOptional({ enum: ['asc', 'desc'], default: 'asc', description: 'Orden alfabetico por apellidos y nombres.' })
+  @IsIn(['asc', 'desc'])
+  orden: 'asc' | 'desc' = 'asc';
+  @ApiPropertyOptional({ enum: ['todos','sin_historia','sin_proxima','sin_atencion'] })
+  @IsIn(['todos','sin_historia','sin_proxima','sin_atencion']) seguimiento = 'todos';
+  @ApiPropertyOptional() @IsOptional() @IsISO8601({ strict: true }) ultimaAntes?: string;
 
   @ApiPropertyOptional({ default: 1, minimum: 1 })
   @Type(() => Number)

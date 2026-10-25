@@ -1,0 +1,19 @@
+import { ConflictException, NotFoundException } from '@nestjs/common';
+import { HistoriasClinicasRepository } from './historias-clinicas.repository';
+import { HistoriasClinicasService } from './historias-clinicas.service';
+
+describe('HistoriasClinicasService', () => {
+  const record = { id: 'historia', updatedAt: new Date('2020-01-01T00:00:00Z') };
+  const repository = { transaccion: jest.fn(async (_id, _actor, fn) => fn({})),registrosPieza:jest.fn(async()=>[]),cita:jest.fn(), obtener: jest.fn(), buscar: jest.fn(), crear: jest.fn(), editar: jest.fn(), evolucion: jest.fn(), crearEvolucion: jest.fn(), editarEvolucion: jest.fn(), pieza: jest.fn(), crearPieza: jest.fn(), editarPieza: jest.fn() };
+  const service = new HistoriasClinicasService(repository as unknown as HistoriasClinicasRepository);
+  beforeEach(() => { jest.clearAllMocks(); repository.buscar.mockResolvedValue(record); repository.evolucion.mockResolvedValue(record); repository.pieza.mockResolvedValue(record); });
+  it('crea historia con el usuario autenticado dentro de una transaccion', async () => { repository.buscar.mockResolvedValue(null); await service.crear('paciente', { alergias: 'Penicilina' }, 'usuario'); expect(repository.transaccion).toHaveBeenCalledWith('paciente', 'usuario', expect.any(Function)); expect(repository.crear).toHaveBeenCalledWith({}, { pacienteId: 'paciente', alergias: 'Penicilina' }); });
+  it('impide duplicar la historia de un paciente', async () => { await expect(service.crear('paciente', {}, 'usuario')).rejects.toBeInstanceOf(ConflictException); expect(repository.crear).not.toHaveBeenCalled(); });
+  it('edita solo datos enviados y conserva nulos explicitos', async () => { await service.editar('paciente', { alergias: null, version: record.updatedAt.toISOString() }, 'usuario'); expect(repository.editar).toHaveBeenCalledWith({}, record.id, { alergias: null }); });
+  it('rechaza cambios obsoletos de antecedentes', async () => { await expect(service.editar('paciente', { alergias: 'dato', version: '2019-01-01T00:00:00Z' }, 'usuario')).rejects.toBeInstanceOf(ConflictException); expect(repository.editar).not.toHaveBeenCalled(); });
+  it('requiere historia antes de registrar evoluciones', async () => { repository.buscar.mockResolvedValue(null); await expect(service.crearEvolucion('paciente', { diagnostico: 'Revision', procedimiento: 'Control' }, 'usuario')).rejects.toBeInstanceOf(NotFoundException); });
+  it('registra evolucion asociada a la historia correcta', async () => { await service.crearEvolucion('paciente', { diagnostico: 'Revision', procedimiento: 'Control' }, 'usuario'); expect(repository.crearEvolucion).toHaveBeenCalledWith({}, expect.objectContaining({ historiaClinicaId: record.id, diagnostico: 'Revision' })); });
+  it('no corrige una evolucion de otra historia', async () => { repository.evolucion.mockResolvedValue(null); await expect(service.editarEvolucion('paciente', 'ajena', { diagnostico: 'dato', procedimiento: 'dato', version: record.updatedAt.toISOString() }, 'usuario')).rejects.toBeInstanceOf(NotFoundException); expect(repository.editarEvolucion).not.toHaveBeenCalled(); });
+  it('no modifica una pieza de otra historia', async () => { repository.pieza.mockResolvedValue(null); await expect(service.editarPieza('paciente', 'ajena', { estado: 'SANO', version: record.updatedAt.toISOString() }, 'usuario')).rejects.toBeInstanceOf(NotFoundException); });
+  it('rechaza version obsoleta en piezas y evoluciones', async () => { await expect(service.editarPieza('paciente', 'pieza', { estado: 'SANO', version: '2019-01-01T00:00:00Z' }, 'usuario')).rejects.toBeInstanceOf(ConflictException); await expect(service.editarEvolucion('paciente', 'ev', { diagnostico: 'dato', procedimiento: 'dato', version: '2019-01-01T00:00:00Z' }, 'usuario')).rejects.toBeInstanceOf(ConflictException); });
+});

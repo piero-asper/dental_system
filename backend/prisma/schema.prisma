@@ -98,8 +98,12 @@ model Cita {
   createdAt          DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt          DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt          DateTime?  @map("deleted_at") @db.Timestamptz(6)
+  claveSolicitud     String?    @unique @map("clave_solicitud") @db.Uuid
+  huellaSolicitud    String?    @map("huella_solicitud")
 
   paciente    Paciente @relation(fields: [pacienteId], references: [id])
+  evoluciones EvolucionClinica[]
+  eventos CitaEvento[]
 
   @@index([pacienteId])
   @@index([fechaInicio, fechaFin])
@@ -113,6 +117,8 @@ model HistoriaClinica {
   alergias             String?
   medicamentos         String?
   observaciones        String?
+  alergiasRevisadas     Boolean @default(false) @map("alergias_revisadas")
+  medicamentosRevisados Boolean @default(false) @map("medicamentos_revisados")
   createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
@@ -133,10 +139,16 @@ model EvolucionClinica {
   observaciones     String?
   createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  citaId            String? @map("cita_id") @db.Uuid
+  piezas            String[] @default([])
+  estado            String @default("FINALIZADA")
+  motivoCorreccion  String? @map("motivo_correccion")
 
   historiaClinica HistoriaClinica @relation(fields: [historiaClinicaId], references: [id])
+  cita Cita? @relation(fields: [citaId], references: [id])
 
   @@index([historiaClinicaId])
+  @@index([citaId])
   @@map("evoluciones_clinicas")
 }
 
@@ -162,6 +174,7 @@ model AuditoriaHistoriaClinica {
   accion            String
   tablaAfectada     String   @map("tabla_afectada")
   registroId        String   @map("registro_id") @db.Uuid
+  authUserId        String?  @map("auth_user_id") @db.Uuid
   valorAnterior     Json?    @map("valor_anterior")
   valorNuevo        Json?    @map("valor_nuevo")
   createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -170,6 +183,42 @@ model AuditoriaHistoriaClinica {
 
   @@index([historiaClinicaId])
   @@map("auditoria_historias_clinicas")
+}
+
+model AgendaVersion {
+  id String @id @default(uuid()) @db.Uuid
+  vigenteDesde DateTime @map("vigente_desde") @db.Date
+  intervalos Json
+  authUserId String? @map("auth_user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  @@index([vigenteDesde, createdAt])
+  @@map("agenda_versiones")
+}
+
+model AgendaBloqueo {
+  id String @id @default(uuid()) @db.Uuid
+  fechaInicio DateTime @map("fecha_inicio") @db.Timestamptz(6)
+  fechaFin DateTime @map("fecha_fin") @db.Timestamptz(6)
+  motivo String
+  authUserId String? @map("auth_user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  canceladoAt DateTime? @map("cancelado_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  @@index([fechaInicio, fechaFin])
+  @@map("agenda_bloqueos")
+}
+
+model CitaEvento {
+  id String @id @default(uuid()) @db.Uuid
+  citaId String @map("cita_id") @db.Uuid
+  authUserId String? @map("auth_user_id") @db.Uuid
+  accion String
+  valorAnterior Json? @map("valor_anterior")
+  valorNuevo Json @map("valor_nuevo")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  cita Cita @relation(fields: [citaId], references: [id])
+  @@index([citaId, createdAt])
+  @@map("cita_eventos")
 }
 
 model Tratamiento {

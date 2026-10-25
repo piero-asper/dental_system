@@ -20,7 +20,7 @@ describe('PacientesRepository con PostgreSQL real (rollback obligatorio)', () =>
     const query = (values = {}) => Object.assign(new BuscarPacientesDto(), { q: marker, ...values });
     try {
       await prisma.$transaction(async (tx) => {
-        const adapter = { paciente: tx.paciente, $transaction: (queries: Promise<unknown>[]) => Promise.all(queries) };
+        const adapter = { paciente: tx.paciente,$queryRaw:tx.$queryRaw.bind(tx), $transaction: (queries: Promise<unknown>[]) => Promise.all(queries) };
         const repository = new PacientesRepository(adapter as unknown as PrismaService);
         const first = await repository.crear({ tipoDocumento: 'SIN_DOCUMENTO', nombres: `Prueba ${marker}`, apellidos: 'Torres Ejemplo' });
         ids.push(first.id);
@@ -35,10 +35,20 @@ describe('PacientesRepository con PostgreSQL real (rollback obligatorio)', () =>
         expect((await repository.listar(query({ estado: 'inactivos' }))).items.map((item) => item.id)).toEqual([second.id]);
         const page1 = await repository.listar(query({ tamanoPagina: 1 }));
         const page2 = await repository.listar(query({ tamanoPagina: 1, pagina: 2 }));
-        expect(page1.total).toBe(2); expect(page1.items[0].id).not.toBe(page2.items[0].id);
+        expect(page1.total).toBe(2);
+        expect([page1.items[0].id, page2.items[0].id]).toEqual([second.id, first.id]);
+        const reversePage1 = await repository.listar(query({ orden: 'desc', tamanoPagina: 1 }));
+        const reversePage2 = await repository.listar(query({ orden: 'desc', tamanoPagina: 1, pagina: 2 }));
+        expect([reversePage1.items[0].id, reversePage2.items[0].id]).toEqual([first.id, second.id]);
         expect((await repository.listar(query({ q: `TORRES ${marker.toUpperCase()}` }))).items.map((item) => item.id)).toEqual([first.id]);
         await repository.editar(first.id, { telefono: '999000111' });
         expect((await repository.listar(query({ q: `${marker} 999000111` }))).items[0].id).toBe(first.id);
+        await repository.editar(second.id,{telefono:'999111000'});
+        const formattedPhone=await repository.listar(query({q:'999 000-111'}));
+        expect(formattedPhone.items.map((p)=>p.id)).toContain(first.id);
+        expect(formattedPhone.items.map((p)=>p.id)).not.toContain(second.id);
+        await repository.editar(first.id,{apellidos:'Tórres Éjemplo'});
+        expect((await repository.listar(query({q:`torres ${marker}`}))).items.map((p)=>p.id)).toContain(first.id);
         await repository.editar(first.id, { telefono: null });
         expect((await repository.buscarPorId(first.id))?.telefono).toBeNull();
         expect(await repository.buscarPorId(deleted.id)).toBeNull();

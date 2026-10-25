@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -38,6 +38,9 @@ beforeEach(() => {
   records = [{ ...initial }]; failCreate = false; mocks.apiClient.mockReset();
   mocks.apiClient.mockImplementation(async (path: string, options?: RequestInit) => {
     const url = new URL(path, 'http://example.test');
+    if(url.pathname==='/pacientes/coincidencias')return [];
+    if(url.pathname.endsWith('/resumen'))return {ultima:null,proxima:null,tieneHistoria:false,totalCitas:0};
+    if(url.pathname.endsWith('/citas'))return {items:[],total:0,totalPaginas:0};
     if (options?.method === 'POST') {
       if (failCreate) throw new ApiError(503, ['El servicio no está disponible. Intenta nuevamente.']);
       const item = { ...initial, ...JSON.parse(String(options.body)), id: 'new-patient' };
@@ -54,6 +57,22 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('gestion de pacientes', () => {
+  it('busca coincidencias por teléfono aunque los nombres sean distintos',async()=>{
+    mocks.apiClient.mockResolvedValue([initial]);
+    start('/pacientes/nuevo');
+    fireEvent.change(screen.getByLabelText('Teléfono'),{target:{value:'999 111-222'}});
+    await screen.findByText('Revisa posibles coincidencias');
+    expect(mocks.apiClient).toHaveBeenCalledWith('/pacientes/coincidencias?q=999111222');
+    expect(screen.getByRole('link',{name:'Torres Rojas, Lucia'})).toBeDefined();
+  });
+  it('conserva la versión original de edición aunque la caché se actualice',async()=>{
+    const client=start(`/pacientes/${initial.id}/editar`);
+    await screen.findByLabelText('Nombres *');
+    fireEvent.change(screen.getByLabelText('Nombres *'),{target:{value:'Otro nombre'}});
+    await act(async()=>{client.setQueryData(['paciente',initial.id],{...initial,updatedAt:'2026-01-02T00:00:00Z'});});
+    fireEvent.click(screen.getByRole('button',{name:'Guardar cambios'}));
+    await waitFor(()=>expect(mocks.apiClient).toHaveBeenCalledWith(`/pacientes/${initial.id}`,expect.objectContaining({method:'PATCH',body:expect.stringContaining(`"version":"${initial.updatedAt}"`)})));
+  });
   it('busca al escribir, aplica el estado inmediatamente y vuelve a pagina 1', async () => {
     start('/pacientes?pagina=2');
     await screen.findByText('Torres Rojas, Lucia');
@@ -126,12 +145,17 @@ describe('gestion de pacientes', () => {
     await screen.findByText('Torres Rojas, Lucia');
   });
 
-  it('navega entre paginas y conserva los filtros al volver de la ficha', async () => {
-    mocks.apiClient.mockImplementation(async (path: string) => path.includes('?')
+  it('ordena de A a Z desde la primera pagina y conserva los filtros al volver de la ficha', async () => {
+    mocks.apiClient.mockImplementation(async (path: string) => path.includes('/resumen') ? {ultima:null,proxima:null,tieneHistoria:false,totalCitas:0} : path.includes('/citas?') ? {items:[],total:0,totalPaginas:0} : path.includes('?')
       ? { items: [initial], total: 21, pagina: path.includes('pagina=2') ? 2 : 1, tamanoPagina: 20, totalPaginas: 2 }
       : initial);
     start('/pacientes?q=Lucia&estado=activos');
     await screen.findByText('Página 1 de 2');
+    fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
+    await screen.findByText('Página 2 de 2');
+    fireEvent.click(screen.getByRole('button', { name: 'Ordenar de A a Z por apellidos' }));
+    await screen.findByText('Página 1 de 2');
+    await waitFor(() => expect(mocks.apiClient).toHaveBeenCalledWith('/pacientes?q=Lucia&estado=activos&pagina=1&tamanoPagina=20&orden=asc', expect.anything()));
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
     await screen.findByText('Página 2 de 2');
     fireEvent.click(screen.getByRole('link', { name: 'Ver ficha de Lucia Torres Rojas' }));
@@ -139,6 +163,12 @@ describe('gestion de pacientes', () => {
     fireEvent.click(screen.getByRole('link', { name: '← Volver a pacientes' }));
     await screen.findByText('Página 2 de 2');
     expect((screen.getByRole('searchbox') as HTMLInputElement).value).toBe('Lucia');
+    expect(screen.getByRole('button', { name: 'Ordenar de A a Z por apellidos' })).toBeDefined();
+    expect(screen.queryByLabelText('Ordenar por')).toBeNull();
+    expect((screen.getByLabelText('Estado') as HTMLSelectElement).value).toBe('activos');
+    fireEvent.click(screen.getByRole('button', { name: 'Limpiar' }));
+    await screen.findByText('Página 1 de 2');
+    await waitFor(() => expect(mocks.apiClient).toHaveBeenCalledWith('/pacientes?q=&estado=todos&pagina=1&tamanoPagina=20&orden=asc', expect.anything()));
   });
 
   it('conserva los filtros al cancelar la edicion de una ficha', async () => {

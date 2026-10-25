@@ -2,6 +2,7 @@ import { Body, Controller, Get, Header, Param, ParseUUIDPipe, Patch, Post, Query
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BuscarPacientesDto, CrearPacienteDto, EditarPacienteDto, ListaPacientesResponseDto, PacienteResponseDto } from './dto/paciente.dto';
 import { PacientesService } from './pacientes.service';
+import { PacientesRepository } from './pacientes.repository';
 
 @ApiTags('pacientes')
 @ApiBearerAuth()
@@ -9,7 +10,10 @@ import { PacientesService } from './pacientes.service';
 @ApiResponse({ status: 400, description: 'Datos de paciente o filtros invalidos.' })
 @Controller('pacientes')
 export class PacientesController {
-  constructor(private readonly service: PacientesService) {}
+  constructor(private readonly service: PacientesService,private readonly repository:PacientesRepository) {}
+  @Get('coincidencias') @Header('Cache-Control','no-store') duplicados(@Query() query:BuscarPacientesDto) { return this.repository.duplicados(query); }
+  @Get(':id/resumen') @Header('Cache-Control','no-store') resumen(@Param('id',new ParseUUIDPipe()) id:string) { return this.repository.resumen(id); }
+  @Get(':id/citas') @Header('Cache-Control','no-store') citas(@Param('id',new ParseUUIDPipe()) id:string,@Query() query:BuscarPacientesDto) { return this.repository.citas(id,query); }
 
   @Get()
   @Header('Cache-Control', 'no-store')

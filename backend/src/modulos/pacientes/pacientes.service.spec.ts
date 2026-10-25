@@ -24,25 +24,25 @@ describe('PacientesService', () => {
 
   it('no modifica datos omitidos en un PATCH', async () => {
     repository.editar.mockResolvedValue(paciente);
-    await service.editar(paciente.id, { nombres: 'Nuevo nombre' });
-    expect(repository.editar).toHaveBeenCalledWith(paciente.id, { nombres: 'Nuevo nombre' });
+    await service.editar(paciente.id, { nombres: 'Nuevo nombre',version:paciente.updatedAt.toISOString() });
+    expect(repository.editar).toHaveBeenCalledWith(paciente.id, { nombres: 'Nuevo nombre' },paciente.updatedAt.toISOString());
   });
 
   it('permite limpiar un dato opcional explicitamente', async () => {
     repository.editar.mockResolvedValue({ ...paciente, telefono: null });
-    await service.editar(paciente.id, { telefono: null });
-    expect(repository.editar).toHaveBeenCalledWith(paciente.id, { telefono: null });
+    await service.editar(paciente.id, { telefono: null,version:paciente.updatedAt.toISOString() });
+    expect(repository.editar).toHaveBeenCalledWith(paciente.id, { telefono: null },paciente.updatedAt.toISOString());
   });
 
   it('devuelve 404 para fichas ausentes o eliminadas', async () => {
     repository.buscarPorId.mockResolvedValue(null);
     await expect(service.obtener(paciente.id)).rejects.toBeInstanceOf(NotFoundException);
     repository.editar.mockRejectedValue(new Prisma.PrismaClientKnownRequestError('missing', { code: 'P2025', clientVersion: '6' }));
-    await expect(service.editar(paciente.id, { activo: false })).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.editar(paciente.id, { activo: false,version:paciente.updatedAt.toISOString() })).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('rechaza actualizaciones vacias', async () => {
-    await expect(service.editar(paciente.id, {})).rejects.toThrow('Incluye al menos un dato');
+    await expect(service.editar(paciente.id, {version:paciente.updatedAt.toISOString()})).rejects.toThrow('Incluye al menos un dato');
     expect(repository.editar).not.toHaveBeenCalled();
   });
 

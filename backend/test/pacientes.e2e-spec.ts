@@ -64,10 +64,10 @@ describe('Pacientes HTTP', () => {
     const id = created.body.id;
     const detail = await api().get(`/api/pacientes/${id}`).auth('token', { type: 'bearer' }).expect(200);
     expect(detail.headers['cache-control']).toBe('no-store');
-    const updated = await api().patch(`/api/pacientes/${id}`).auth('token', { type: 'bearer' }).send({ telefono: '999111222', activo: false }).expect(200);
+    const updated = await api().patch(`/api/pacientes/${id}`).auth('token', { type: 'bearer' }).send({ telefono: '999111222', activo: false,version:created.body.updatedAt }).expect(200);
     expect(updated.body).toMatchObject({ nombres: 'Lucia', telefono: '999111222', activo: false });
-    const result = await api().get('/api/pacientes?q=Lucia&estado=inactivos&pagina=2&tamanoPagina=10').auth('token', { type: 'bearer' }).expect(200);
-    expect(repository.listar).toHaveBeenCalledWith(expect.objectContaining({ q: 'Lucia', estado: 'inactivos', pagina: 2, tamanoPagina: 10 }));
+    const result = await api().get('/api/pacientes?q=Lucia&estado=inactivos&pagina=2&tamanoPagina=10&orden=desc').auth('token', { type: 'bearer' }).expect(200);
+    expect(repository.listar).toHaveBeenCalledWith(expect.objectContaining({ q: 'Lucia', estado: 'inactivos', pagina: 2, tamanoPagina: 10, orden: 'desc' }));
     expect(result.body).toMatchObject({ total: 1, pagina: 2, tamanoPagina: 10 });
   });
 
@@ -91,7 +91,7 @@ describe('Pacientes HTTP', () => {
     await api().patch(`/api/pacientes/${randomUUID()}`).auth('token', { type: 'bearer' }).send(body).expect(400);
   });
 
-  it.each(['pagina=0', 'pagina=1.5', 'tamanoPagina=101', 'estado=otro', 'q=' + 'x'.repeat(101)])('valida filtros: %s', async (query) => {
+  it.each(['pagina=0', 'pagina=1.5', 'tamanoPagina=101', 'estado=otro', 'orden=otro', 'q=' + 'x'.repeat(101)])('valida filtros: %s', async (query) => {
     await api().get(`/api/pacientes?${query}`).auth('token', { type: 'bearer' }).expect(400);
     expect(repository.listar).not.toHaveBeenCalled();
   });

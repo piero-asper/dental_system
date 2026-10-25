@@ -12,10 +12,11 @@ export function PacienteFormPage() {
   const listHref = `/pacientes${listSearch ? `?${listSearch}` : ''}`;
   const detail = useQuery({ queryKey: ['paciente', id], queryFn: ({ signal }) => pacientesApi.obtener(id!, signal), enabled: Boolean(id), retry: false });
 
-  async function save(data: PacienteInput) {
-    const paciente = id ? await pacientesApi.editar(id, data) : await pacientesApi.crear(data);
+  async function save(data: PacienteInput, version?: string) {
+    const paciente = id ? await pacientesApi.editar(id, { ...data,version:version! }) : await pacientesApi.crear(data);
     client.setQueryData(['paciente', paciente.id], paciente);
     await client.invalidateQueries({ queryKey: ['pacientes'] });
+    await Promise.all(['paciente-resumen','pacientes-selector','bi'].map((key)=>client.invalidateQueries({queryKey:[key]})));
     if (id) {
       navigate(listHref, { replace: true, state: { patientUpdated: true } });
     } else {

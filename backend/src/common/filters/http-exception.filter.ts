@@ -26,14 +26,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     if (status >= 500) {
       this.logger.error(
-        `${request.method} ${request.url}`,
-        exception instanceof Error ? exception.stack : String(exception)
+        `${request.method} ${request.route?.path ?? request.path}: ${exception instanceof Error ? exception.name : 'Error interno'}`
       );
     }
 
     response.status(status).json({
       statusCode: status,
-      path: request.url,
+      path: request.path,
       method: request.method,
       timestamp: new Date().toISOString(),
       error: errorResponse

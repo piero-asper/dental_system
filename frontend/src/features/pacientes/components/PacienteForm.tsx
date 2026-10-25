@@ -1,4 +1,7 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/shared/lib/apiClient';
+import { UnsavedChanges } from '@/shared/components/UnsavedChanges';
 import { Link } from 'react-router-dom';
 import { mensajeError, Paciente, PacienteInput } from '../api/pacientesApi';
 
@@ -7,8 +10,9 @@ type FormValues = {
 };
 
 export function PacienteForm({ paciente, cancelTo, cancelState, onSave }: {
-  paciente?: Paciente; cancelTo: string; cancelState?: { listSearch: string }; onSave: (data: PacienteInput) => Promise<void>;
+  paciente?: Paciente; cancelTo: string; cancelState?: { listSearch: string }; onSave: (data: PacienteInput, version?: string) => Promise<void>;
 }) {
+  const [original] = useState(paciente);
   const [values, setValues] = useState<FormValues>({
     nombres: paciente?.nombres ?? '',
     apellidos: paciente?.apellidos ?? '', telefono: paciente?.telefono ?? '',
@@ -16,6 +20,14 @@ export function PacienteForm({ paciente, cancelTo, cancelState, onSave }: {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [search,setSearch]=useState({nombre:'',telefono:''});
+  useEffect(()=>{const timer=setTimeout(()=>setSearch({nombre:`${values.nombres} ${values.apellidos}`.trim().slice(0,100),telefono:values.telefono.replace(/\D/g,'')}),400);return()=>clearTimeout(timer);},[values.nombres,values.apellidos,values.telefono]);
+  const matches=useQuery({queryKey:['coincidencias',search],enabled:!paciente && (search.nombre.length>=4 || search.telefono.length>=5),queryFn:async()=>{
+    const terms=[...(search.nombre.length>=4?[search.nombre]:[]),...(search.telefono.length>=5?[search.telefono]:[])];
+    const results=await Promise.all(terms.map((q)=>apiClient<Paciente[]>(`/pacientes/coincidencias?q=${encodeURIComponent(q)}`)));
+    return [...new Map(results.flat().map((p)=>[p.id,p])).values()];
+  },retry:false});
+  const dirty=JSON.stringify(values)!==JSON.stringify({nombres:original?.nombres??'',apellidos:original?.apellidos??'',telefono:original?.telefono??'',activo:original?.activo??true});
 
   function change(name: keyof FormValues, value: string | boolean) {
     setValues((current) => ({ ...current, [name]: value }));
@@ -32,12 +44,15 @@ export function PacienteForm({ paciente, cancelTo, cancelState, onSave }: {
     try {
       const optional = (value: string) => value.trim() || null;
       await onSave({ ...values, nombres: values.nombres.trim(), apellidos: values.apellidos.trim(),
-        telefono: optional(values.telefono) });
+        telefono: optional(values.telefono) }, original?.updatedAt);
     } catch (cause) { setError(mensajeError(cause)); }
     finally { setSaving(false); }
   }
 
   return <form className="patient-form surface" onSubmit={(event) => { void submit(event); }} aria-busy={saving}>
+    <UnsavedChanges dirty={dirty && !saving}/>
+    {matches.isError&&<p className="notice-warning">No se pudieron consultar posibles coincidencias. Revisa los datos antes de guardar.</p>}
+    {!paciente && Array.isArray(matches.data) && matches.data.length>0 && <div className="notice-warning"><strong>Revisa posibles coincidencias</strong><p>Pueden ser personas distintas. Puedes abrir su ficha o continuar con el registro.</p>{matches.data.map((p)=><p key={p.id}><Link className="text-link" to={`/pacientes/${p.id}`}>{p.apellidos}, {p.nombres}</Link> · {p.telefono||'Sin teléfono'}</p>)}</div>}
     <p className="form-intro">Los campos con * son obligatorios.</p>
     <fieldset disabled={saving}>
       <legend>Datos personales</legend>

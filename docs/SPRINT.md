@@ -1,113 +1,52 @@
-# Plan de Sprints - Sistema de Gestión Dental
+# Seguimiento de sprints — Sistema de Gestión Dental
 
-## Estados
-- ⬜ Pendiente
-- 🟨 En curso
-- ✅ Terminado
+Actualizado: 2026-10-24 · America/Bogota.
 
-## Sprint actual
-- Sprint: Sprint 2
-- Estado: ✅ Terminado
-- Duración estimada: 2 semanas
-- Objetivo: gestionar registro, edicion, consulta y busqueda de pacientes con nombres, apellidos y telefono, validaciones y autenticacion obligatoria.
+El seguimiento se divide por capa para distinguir el trabajo de datos y reglas de negocio del trabajo de diseño e interfaz. Se conserva la numeración histórica de los módulos.
 
-## Sprint 0 - Requisitos, arquitectura inicial y preparacion
-- ✅ Paso 1: definir requisitos funcionales, requisitos no funcionales e historias de usuario por módulo.
-- ✅ Paso 2: definir modelo entidad-relacion inicial y reglas de datos.
-- ✅ Paso 3: crear proyecto en Supabase y definir configuracion inicial.
-- ✅ Paso 4: crear estructura base del repositorio sin Docker.
-- ✅ Paso 5: crear `.gitignore` y `.env.example` para backend y frontend.
-- ✅ Paso 6: configurar backend NestJS base con Swagger, validacion, logs y manejo centralizado de errores.
-- ✅ Paso 7: configurar frontend React + TypeScript base.
-- ✅ Paso 8: configurar Prisma y conexion a PostgreSQL Supabase.
-- ✅ Paso 9: configurar GitFlow y GitHub Actions CI inicial.
-- ✅ Paso 10: revisar Definition of Done del Sprint 0.
+- [Sprints de backend](SPRINTS_BACKEND.md): API, reglas de negocio, autenticación, datos, migraciones y permisos.
+- [Sprints de frontend](SPRINTS_FRONTEND.md): pantallas, diseño, navegación, formularios, accesibilidad y conexión con la API.
+- [Estado de avance](ESTADO_AVANCE.md): evidencia de comprobaciones, arranque local y pendientes para continuar.
+- [Plan de mejoras M0–M5](PLAN_MEJORAS_BI.md): criterios funcionales y reglas de BI compartidas por ambas capas.
 
-## Cambios fuera de sprint
-- ✅ 2026-10-13: cambio de requisito antes de iniciar Sprint 1. El sistema pasa a usuario único, sin tabla `profiles`, sin roles y con RLS simple para usuarios autenticados.
+## Trabajo actual
 
-## Sprint 1 - autenticacion
-- ✅ Registro publico desactivado, acceso anonimo desactivado y una cuenta confirmada creada manualmente (verificado en Supabase).
-- ✅ Backend: guard que verifica el token con Supabase Auth y endpoint `GET /api/autenticacion/sesion`.
-- ✅ RLS simple: las 14 tablas tienen RLS activo y sin permisos directos para `anon`, verificado en el proyecto real.
-- ✅ Frontend: login, sesión persistente, renovacion de token, rutas protegidas y cierre de sesion.
-- ✅ Pruebas automatizadas de acceso y documentacion Swagger del endpoint de sesion.
-- ✅ Prueba manual confirmada por el usuario: acceso con cuenta real, sesion al recargar, cierre de sesion y bloqueo de rutas privadas.
-- ✅ Entrega v0.1.0 mediante Pull Requests de `feature/s1-autenticacion` hacia `develop` y de `develop` hacia `main`, con CI obligatorio antes de cada integracion.
+**Frontend: FE-8 — apariencia del sistema pendiente de continuar.** La composición inicial del panel y la navegación está implementada, pero los colores no fueron aceptados. La última paleta explorada es `#0C4A6E`, `#2B6CB0`, `#1C3F72` y `#EBF8FF`, con tarjetas blancas; sólo se mostró en una muestra y todavía no está aplicada al código. Continuar desde [Apariencia pendiente](APARIENCIA_PENDIENTE.md). Es una tarea de presentación conectada a la API existente.
 
-## Sprint 2 - pacientes
-- ✅ Registro con nombres y apellidos obligatorios y telefono opcional.
-- ✅ Edicion de datos personales y contacto; activar/inactivar sin borrar la ficha.
-- ✅ Consulta de ficha, busqueda por nombre, apellidos o telefono, filtro de estado y paginacion.
-- ✅ Validaciones y DTOs; campos obligatorios sin espacios vacios y telefono opcional limpiable.
-- ✅ Pruebas unitarias, HTTP y frontend; verificacion del repositorio con PostgreSQL real y rollback de los datos de prueba.
-- ✅ Documentacion Swagger de los cuatro endpoints protegidos.
-- ✅ Prueba manual confirmada por el usuario: el modulo de pacientes funciona correctamente, con busqueda automatica, estado inmediato y retorno al listado al guardar una edicion.
-- ✅ Entrega v0.2.0 mediante Pull Requests de `feature/s2-pacientes` hacia `develop` y de `develop` hacia `main`, con CI obligatorio antes de cada integracion.
+**Backend: BE-8 — BI operativo implementado y verificado, con aceptación e integración pendientes.** El rediseño no añade servicios, gabinetes, profesionales, ingresos ni tratamientos ficticios.
 
-## Sprint 3 - citas
-- ⬜ Agenda por odontologo.
-- ⬜ Reserva de citas.
-- ⬜ Reprogramacion de citas.
-- ⬜ Cancelacion de citas.
-- ⬜ Estados de cita.
-- ⬜ Pruebas unitarias y e2e del flujo critico.
-- ⬜ Documentacion Swagger.
+Citas e Historias clínicas conservan su aceptación conjunta pendiente. La aplicación mantiene una cuenta operativa, una agenda y los datos personales mínimos acordados. IA descartada por decisión del usuario.
 
-## Sprint 4 - historias-clinicas
-- ⬜ Historia clinica por paciente.
-- ⬜ Odontograma.
-- ⬜ Evoluciones clinicas.
-- ⬜ Auditoria de cambios.
-- ⬜ RLS para informacion sensible.
-- ⬜ Pruebas unitarias y e2e del flujo critico.
-- ⬜ Documentacion Swagger.
+## Resumen por módulo y capa
 
-## Sprint 5 - tratamientos
-- ⬜ Catalogo de tratamientos.
-- ⬜ Precios.
-- ⬜ Presupuestos por paciente.
-- ⬜ Estados de presupuesto.
-- ⬜ Pruebas unitarias y e2e del flujo critico.
-- ⬜ Documentacion Swagger.
+| Módulo | Backend | Frontend |
+|---|---|---|
+| 0. Base técnica | ✅ BE-0 cerrado | ✅ FE-0 cerrado |
+| 1. Autenticación | ✅ BE-1, v0.1.0 | ✅ FE-1, v0.1.0 |
+| 2. Pacientes | ✅ BE-2 base, v0.2.0 | ✅ FE-2 base, v0.2.0 |
+| 3. Citas | 🟨 BE-3 implementado; cierre pendiente | 🟨 FE-3 funcional; aceptación pendiente |
+| 4. Historias clínicas | 🟨 BE-4 implementado; cierre pendiente | 🟨 FE-4 funcional; aceptación pendiente |
+| Mejoras M0–M3 | 🟨 BE-M0–M3 verificados; aceptación pendiente | 🟨 FE-M0–M3 verificados; aceptación pendiente |
+| 5. Tratamientos | ⬜ BE-5 pendiente | ⬜ FE-5 pendiente |
+| 6. Pagos | ⬜ BE-6 pendiente | ⬜ FE-6 pendiente |
+| 7. Inventario | ⬜ BE-7 pendiente | ⬜ FE-7 pendiente |
+| 8. Panel y reportes | 🟨 BE-8 operativo; financiera pendiente | 🟨 FE-8 operativo; rediseño en revisión |
+| 9. QA y producción | ⬜ BE-9 pendiente | ⬜ FE-9 pendiente |
 
-## Sprint 6 - pagos
-- ⬜ Registro de cobros.
-- ⬜ Caja diaria.
-- ⬜ Comprobantes.
-- ⬜ Deudas por paciente.
-- ⬜ Pruebas unitarias y e2e del flujo critico.
-- ⬜ Documentacion Swagger.
+Las mejoras posteriores de Pacientes todavía no forman parte de la entrega v0.2.0. El BI operativo adelanta parte del Sprint 8; la parte financiera depende de Tratamientos y Pagos.
 
-## Sprint 7 - inventario
-- ⬜ Registro de insumos.
-- ⬜ Control de stock.
-- ⬜ Alertas de bajo stock.
-- ⬜ Movimientos de inventario.
-- ⬜ Pruebas unitarias y e2e del flujo critico.
-- ⬜ Documentacion Swagger.
+## Cómo registrar el avance
 
-## Sprint 8 - reportes y panel
-- ⬜ Indicadores del dia en panel frontend.
-- ⬜ Reportes operativos.
-- ⬜ Exportaciones.
-- ⬜ Filtros por fecha, estado y modulo.
-- ⬜ Pruebas unitarias y e2e del flujo critico.
-- ⬜ Documentacion Swagger.
+1. Identificar el sprint y la capa: por ejemplo, FE-8 para modificar el dashboard o BE-8 para cambiar un indicador/API.
+2. Actualizar tareas y evidencias únicamente en esa capa; cambiar el diseño no cierra el backend ni reabre una versión entregada.
+3. Si cambia un contrato entre capas, registrar la dependencia en ambos documentos.
+4. Confirmar pruebas y aceptación correspondientes antes de cerrar. Mantener separada la aceptación visual de la aceptación de reglas de negocio.
+5. Integrar mediante PR con CI hacia develop/main según el flujo del proyecto. No crear una versión sólo por completar una maqueta.
 
-## Sprint 9 - QA, seguridad, optimizacion y despliegue
-- ⬜ QA funcional completo.
-- ⬜ Revision de seguridad.
-- ⬜ Optimizacion de consultas.
-- ⬜ Revision de RLS.
-- ⬜ Preparacion de despliegue.
-- ⬜ Documentacion final.
+## Decisiones y pendientes compartidos
 
-## Pendientes / Bugs
-- ✅ Crear el proyecto real en Supabase desde la cuenta de la clinica y copiar valores reales en `.env` local.
-- ✅ Ejecutar `npx prisma migrate dev` cuando `DATABASE_URL` y `DIRECT_URL` reales esten configurados.
-- ✅ Ejecutar `backend/scripts/supabase-rls.sql` en Supabase despues de crear las tablas.
-- ✅ Datos operativos confirmados por el usuario: nombres y apellidos obligatorios; telefono opcional. Se omiten DNI, fecha de nacimiento, sexo, correo, direccion y contacto de emergencia.
-- ⬜ Revisar requisitos legales de datos y conservacion con la clinica antes de produccion.
-- ⬜ Definir estrategia de numeracion de comprobantes antes del modulo pagos.
-- ⬜ Revisar vulnerabilidades reportadas por `npm audit` en dependencias transitivas antes de produccion.
+- Nombres y apellidos obligatorios; teléfono opcional. Se omiten DNI, fecha de nacimiento, sexo, correo, dirección y contacto de emergencia.
+- Revisar con la clínica los requisitos de datos y conservación antes de producción.
+- Definir la numeración de comprobantes antes de Pagos.
+- Revisar dependencias y permisos como parte de BE-9/FE-9.
+- Las entregas previas v0.1.0 y v0.2.0 se integraron mediante PR/CI. Citas, Historias y las mejoras todavía requieren aceptación e integración.
