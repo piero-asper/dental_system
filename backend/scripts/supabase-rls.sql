@@ -1,103 +1,23 @@
--- Script inicial de Row Level Security para Supabase.
--- Ejecutar despues de crear las tablas con Prisma Migrate.
--- Sistema de usuario unico: cualquier usuario autenticado puede leer y escribir.
-
-alter table if exists pacientes enable row level security;
-alter table if exists citas enable row level security;
-alter table if exists historias_clinicas enable row level security;
-alter table if exists evoluciones_clinicas enable row level security;
-alter table if exists odontograma_piezas enable row level security;
-alter table if exists auditoria_historias_clinicas enable row level security;
-alter table if exists tratamientos enable row level security;
-alter table if exists presupuestos enable row level security;
-alter table if exists presupuesto_items enable row level security;
-alter table if exists pagos enable row level security;
-alter table if exists comprobantes enable row level security;
-alter table if exists caja_movimientos enable row level security;
-alter table if exists insumos enable row level security;
-alter table if exists inventario_movimientos enable row level security;
-
-create policy "authenticated_full_access_pacientes"
-on pacientes for all
-to authenticated
-using (true)
-with check (true);
-
-create policy "authenticated_full_access_citas"
-on citas for all
-to authenticated
-using (true)
-with check (true);
-
-create policy "authenticated_full_access_historias_clinicas"
-on historias_clinicas for all
-to authenticated
-using (true)
-with check (true);
-
-create policy "authenticated_full_access_evoluciones_clinicas"
-on evoluciones_clinicas for all
-to authenticated
-using (true)
-with check (true);
-
-create policy "authenticated_full_access_odontograma_piezas"
-on odontograma_piezas for all
-to authenticated
-using (true)
-with check (true);
-
-create policy "authenticated_full_access_auditoria_historias_clinicas"
-on auditoria_historias_clinicas for all
-to authenticated
-using (true)
-with check (true);
-
-create policy "authenticated_full_access_tratamientos"
-on tratamientos for all
-to authenticated
-using (true)
-with check (true);
-
-create policy "authenticated_full_access_presupuestos"
-on presupuestos for all
-to authenticated
-using (true)
-with check (true);
-
-create policy "authenticated_full_access_presupuesto_items"
-on presupuesto_items for all
-to authenticated
-using (true)
-with check (true);
-
-create policy "authenticated_full_access_pagos"
-on pagos for all
-to authenticated
-using (true)
-with check (true);
-
-create policy "authenticated_full_access_comprobantes"
-on comprobantes for all
-to authenticated
-using (true)
-with check (true);
-
-create policy "authenticated_full_access_caja_movimientos"
-on caja_movimientos for all
-to authenticated
-using (true)
-with check (true);
-
-create policy "authenticated_full_access_insumos"
-on insumos for all
-to authenticated
-using (true)
-with check (true);
-
-create policy "authenticated_full_access_inventario_movimientos"
-on inventario_movimientos for all
-to authenticated
-using (true)
-with check (true);
-
+-- Ejecutar despues de Prisma Migrate. Se puede repetir sin duplicar politicas.
+-- Usuario unico: negocio con lectura/escritura; datos clinicos con lectura directa.
+-- Las escrituras clinicas pasan por el backend para identificar al responsable.
+DO $$
+DECLARE tabla text; clinica boolean;
+BEGIN
+  FOREACH tabla IN ARRAY ARRAY['pacientes','citas','historias_clinicas','evoluciones_clinicas',
+    'odontograma_piezas','auditoria_historias_clinicas','tratamientos','presupuestos',
+    'presupuesto_items','pagos','comprobantes','caja_movimientos','insumos','inventario_movimientos','agenda_versiones','agenda_bloqueos','cita_eventos'] LOOP
+    clinica := tabla IN ('historias_clinicas','evoluciones_clinicas','odontograma_piezas','auditoria_historias_clinicas','agenda_versiones','agenda_bloqueos','cita_eventos');
+    EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', tabla);
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', 'authenticated_full_access_' || tabla, tabla);
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', 'authenticated_read_' || tabla, tabla);
+    EXECUTE format('REVOKE ALL ON public.%I FROM anon, authenticated', tabla);
+    IF clinica THEN
+      EXECUTE format('CREATE POLICY %I ON public.%I FOR SELECT TO authenticated USING (true)', 'authenticated_read_' || tabla, tabla);
+      EXECUTE format('GRANT SELECT ON public.%I TO authenticated', tabla);
+    ELSE
+      EXECUTE format('CREATE POLICY %I ON public.%I FOR ALL TO authenticated USING (true) WITH CHECK (true)', 'authenticated_full_access_' || tabla, tabla);
+      EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON public.%I TO authenticated', tabla);
+    END IF;
+  END LOOP;
+END $$;

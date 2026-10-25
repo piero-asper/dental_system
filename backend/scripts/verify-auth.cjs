@@ -5,10 +5,16 @@ const path = require('node:path');
 const { parseEnv } = require('node:util');
 const backendEnv = path.resolve(__dirname, '../.env');
 if (fs.existsSync(backendEnv)) process.loadEnvFile(backendEnv);
+// Only known diagnostic codes: never emit an exception message containing configuration.
+function reason(error) {
+  const code = error?.cause?.code ?? error?.errorCode ?? error?.code;
+  const known = ['ENOTFOUND', 'EAI_AGAIN', 'ECONNREFUSED', 'ETIMEDOUT', 'ENETUNREACH', 'ECONNRESET', 'UND_ERR_CONNECT_TIMEOUT', 'CERT_HAS_EXPIRED', 'UNABLE_TO_VERIFY_LEAF_SIGNATURE', 'P1000', 'P1001', 'P1002', 'P1017'];
+  return known.includes(code) ? ` (${code})` : error?.name === 'TimeoutError' ? ' (tiempo de espera agotado)' : '';
+}
 
 const tables = ['pacientes', 'citas', 'historias_clinicas', 'evoluciones_clinicas',
   'odontograma_piezas', 'auditoria_historias_clinicas', 'tratamientos', 'presupuestos',
-  'presupuesto_items', 'pagos', 'comprobantes', 'caja_movimientos', 'insumos', 'inventario_movimientos'];
+  'presupuesto_items', 'pagos', 'comprobantes', 'caja_movimientos', 'insumos', 'inventario_movimientos','agenda_versiones','agenda_bloqueos','cita_eventos'];
 
 async function main() {
   const frontendPath = path.resolve(__dirname, '../../frontend/.env');
@@ -40,7 +46,7 @@ async function main() {
           console.log('Cuenta operativa con correo confirmado:', confirmed);
           if (!confirmed) process.exitCode = 1;
         }
-      } catch { console.log(`${name}: no se pudo conectar a Supabase.`); process.exitCode = 1; }
+      } catch (error) { console.log(`${name}: no se pudo conectar a Supabase${reason(error)}.`); process.exitCode = 1; }
     }
   } else { console.log('Falta configurar Supabase en backend.'); process.exitCode = 1; }
 
@@ -63,11 +69,22 @@ async function main() {
       FROM pg_policies WHERE schemaname = 'public'
     `;
     const domainPolicies = policies.filter((row) => tables.includes(row.tablename));
+    const clinicalTables = ['historias_clinicas', 'evoluciones_clinicas', 'odontograma_piezas', 'auditoria_historias_clinicas','agenda_versiones','agenda_bloqueos','cita_eventos'];
     const expected = domainPolicies.length === tables.length && domainPolicies.every((row) =>
-      row.roles === '{authenticated}' && row.cmd === 'ALL' && row.qual === 'true' && row.with_check === 'true');
+      row.roles === '{authenticated}' && row.qual === 'true' &&
+      (clinicalTables.includes(row.tablename) ? row.cmd === 'SELECT' && row.with_check === null : row.cmd === 'ALL' && row.with_check === 'true'));
     console.log('Politicas de usuario autenticado verificadas:', expected);
     if (!expected) process.exitCode = 1;
-  } catch { console.log('No se pudo inspeccionar RLS en PostgreSQL.'); process.exitCode = 1; }
+    const clinicalPermissions = await prisma.$queryRaw`
+      SELECT relname AS tabla,
+        has_table_privilege('authenticated', c.oid, 'INSERT,UPDATE,DELETE,TRUNCATE') AS escritura_directa
+      FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE n.nspname = 'public' AND c.relname IN ('historias_clinicas','evoluciones_clinicas','odontograma_piezas','auditoria_historias_clinicas','agenda_versiones','agenda_bloqueos','cita_eventos')
+    `;
+    const protectedClinicalWrites = clinicalPermissions.length === 7 && clinicalPermissions.every((row) => !row.escritura_directa);
+    console.log('Escrituras clinicas directas bloqueadas:', protectedClinicalWrites);
+    if (!protectedClinicalWrites) process.exitCode = 1;
+  } catch (error) { console.log(`No se pudo inspeccionar RLS en PostgreSQL${reason(error)}.`); process.exitCode = 1; }
   finally { await prisma.$disconnect(); }
 }
 void main().catch(() => { console.log('No se pudo completar la verificacion.'); process.exitCode = 1; });

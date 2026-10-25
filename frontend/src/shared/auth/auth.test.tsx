@@ -26,7 +26,7 @@ function start(path = '/pacientes') {
   render(<QueryClientProvider client={client}><AuthProvider><MemoryRouter initialEntries={[path]}>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route element={<ProtectedRoute />}><Route element={<AppShell />}>
+      <Route element={<ProtectedRoute />}><Route element={<AppShell navigation={[]} />}>
         <Route path="/pacientes" element={<h1>Pacientes privados</h1>} />
         <Route path="/panel" element={<h1>Panel privado</h1>} />
       </Route></Route>

@@ -76,11 +76,22 @@ a {
 }
 
 .main-content {
+  min-width: 0;
   padding: 32px;
 }
 
 .module-page {
   max-width: 960px;
+}
+
+.construction-page { max-width: none; }
+.construction-notice.surface { display: flex; align-items: center; gap: 18px; padding: 24px; border-radius: 18px; box-shadow: 0 2px 8px #17202606; }
+.construction-icon { display: grid; place-items: center; flex: 0 0 48px; width: 48px; height: 48px; border-radius: 50%; background: #edf5fc; color: #225b89; }
+.construction-copy { min-width: 0; }
+.construction-notice h2 { margin: 0 0 5px; font-size: 18px; line-height: 1.4; }
+.construction-notice p { margin: 0; color: #53616b; font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .construction-notice.surface { gap: 14px; padding: 18px; }
 }
 
 .module-header {
@@ -174,6 +185,82 @@ button:disabled { opacity: .65; cursor: wait; }
 .button-icon { display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
 .surface { border: 1px solid #dce3e7; border-radius: 10px; background: #fff; margin-top: 24px; }
 .patient-search { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; padding: 20px; }
+.patient-search > .patient-sort-button { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(210px,1fr)); gap: 16px; margin: 24px 0; }
+.summary-card { display: flex; flex-direction: column; gap: 10px; padding: 22px; text-align: left; color: inherit; font: inherit; }
+.summary-card > span { color: #53616b; font-size: 13px; font-weight: 600; }
+.summary-card > strong { font-size: 20px; line-height: 1.4; }
+.summary-card > small { color: #53616b; line-height: 1.6; }
+button.summary-card { cursor: pointer; }
+.patient-appointment { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 18px 0; border-top: 1px solid #e7edef; }
+.patient-appointment p { color: #53616b; margin: 8px 0 0; }
+.notice-warning { background: #fff8e7; color: #78551d; padding: 16px 20px; border: 1px solid #ebd49f; border-radius: 8px; line-height: 1.6; }
+.schedule-editor { display: grid; gap: 0; margin-top: 22px; }
+.schedule-editor > section { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; border-top: 1px solid #e7edef; padding: 16px 0; }
+.schedule-editor > section > strong { min-width: 100px; }
+.schedule-editor .inline-actions { align-items: flex-end; }
+.schedule-editor input { max-width: 150px; }
+.schedule-blocks { border-top: 1px solid #dce3e7; padding-top: 24px; margin-top: 28px; }
+.calendar-scroll { overflow-x: auto; margin-top: 24px; }
+.calendar-grid { display: grid; gap: 8px; }
+.calendar-day.surface { padding: 12px 8px; min-width: 0; }
+.calendar-day h2 { margin: 0 0 20px; font-size: 15px; text-align: center; color: #225a60; }
+.calendar-track { position: relative; margin-top: 20px; }
+.calendar-hour { position: absolute; left: 0; right: 0; border-top: 1px solid #e5ebed; height: 60px; }
+.calendar-hour > span { color: #68757e; font-size: 10px; position: absolute; top: -7px; background: white; padding-right: 3px; }
+.calendar-free { position: absolute; left: 44px; right: 3px; border: 0; border-bottom: 1px dashed #c7e5df; background: #f3faf8; color: #276c61; text-align: left; font-size: 10px; padding: 3px 7px; cursor: pointer; border-radius: 4px; }
+.calendar-free:hover { background: #d8f0e9; }
+.calendar-appointment { position: absolute; left: 44px; right: 3px; border: 1px solid currentColor; border-left: 4px solid currentColor; border-radius: 5px; padding: 4px 7px; font: inherit; font-size: 11px; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; overflow: hidden; text-align: left; cursor: pointer; }
+.calendar-appointment strong { font-size: 11px; line-height: 1.3; }
+.calendar-appointment small { overflow-wrap: anywhere; }
+.calendar-now { position: absolute; left: 35px; right: 0; height: 2px; background: #c64c43; pointer-events: none; z-index: 2; }
+.calendar-now::before { content: ''; width: 7px; height: 7px; position: absolute; top: -2px; border-radius: 50%; background: #c64c43; }
+.appointment-panel { border-color: #b1d3cd; box-shadow: 0 8px 28px #153c3510; }
+.clinical-banner { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 18px; padding: 22px; margin-top: 24px; align-items: start; }
+.clinical-banner h2 { font-size: 21px; margin: 6px 0; }
+.clinical-banner p { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; line-height: 1.6; }
+.clinical-alert { background: #fff1ec; border-left: 3px solid #bc583c; padding: 12px 16px; border-radius: 5px; }
+.clinical-summary { background: #f3f7f8; padding: 12px 16px; border-radius: 5px; }
+.timeline-note { border-left: 3px solid #5aa99b; }
+.tooth-svg { width: 38px; height: 50px; fill: none; stroke: currentColor; stroke-width: 2; }
+.tooth-svg text { stroke: none; fill: currentColor; font-size: 23px; }
+.surface-selector { display: flex; align-items: center; flex-wrap: wrap; gap: 24px; margin: 24px 0; }
+.surface-selector svg { width: 170px; height: 170px; flex: 0 0 170px; }
+.surface-selector > div { max-width: 400px; font-size: 14px; line-height: 1.7; }
+.surface-selector path { fill: #f2f5f7; stroke: #879ca7; stroke-width: 1; cursor: pointer; }
+.surface-selector path.healthy { fill: #d7eee4; }
+.surface-selector path.finding { fill: #f3c9c0; }
+.surface-selector path.selected { stroke: #0f766e; stroke-width: 3; }
+.surface-selector g:focus path { outline: none; stroke: #0f766e; stroke-width: 4; }
+.bi-cut { display: flex; flex-direction: column; gap: 5px; color: #53616b; font-size: 12px; margin: 20px 0; line-height: 1.6; }
+.bi-metrics { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 14px; margin: 20px 0; }
+.metric-card { text-align: left; padding: 20px; color: inherit; font: inherit; display: flex; flex-direction: column; gap: 12px; cursor: pointer; min-width: 0; transition: border-color .15s,box-shadow .15s; }
+.metric-card:hover,.metric-card.selected { border-color: #0f766e; box-shadow: 0 4px 16px #0f766e10; }
+.metric-card > strong { font-size: 34px; line-height: 1; letter-spacing: -1px; }
+.metric-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #53616b; font-weight: 600; }
+.metric-label svg { color: #0f766e; flex-shrink: 0; }
+.metric-card > small { color: #296a5b; font-size: 11px; }
+.metric-hint { font-size: 11px; color: #68757e; line-height: 1.5; }
+.bi-chart { padding: 24px; margin: 24px 0; }
+.bi-chart h2 { display: flex; align-items: center; gap: 8px; font-size: 19px; }
+.bi-chart .section-toolbar > p { font-size: 12px; color: #53616b; }
+.chart-legend { display: flex; gap: 10px; align-items: center; font-size: 12px; margin-bottom: 18px; }
+.patients-dot,.appointments-dot { display: inline-block; width: 9px; height: 9px; border-radius: 3px; background: #188d7c; }
+.appointments-dot { background: #7d9fd0; margin-left: 14px; }
+.bar-chart { display: flex; gap: 12px; overflow-x: auto; padding: 12px 0; }
+.chart-day { flex: 1 0 36px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.chart-day small { font-size: 10px; color: #53616b; }
+.bar-pair { height: 150px; width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 3px; border-bottom: 1px solid #dce3e7; }
+.bar { width: min(40%,28px); border: 0; border-radius: 3px 3px 0 0; cursor: pointer; }
+.patients-bar { background: #188d7c; }.appointments-bar { background: #7d9fd0; }
+.heatmap-scroll { overflow-x: auto; margin-top: 24px; }
+.heatmap { width: 100%; border-spacing: 4px; font-size: 11px; }
+.heatmap th { font-weight: 500; color: #53616b; }
+.heatmap td { padding: 0; }
+.heatmap button { width: 100%; min-width: 26px; height: 30px; border: 0; border-radius: 3px; background: #f1f4f6; color: #68757e; cursor: pointer; font-size: 11px; }
+.bi-detail { border-top: 3px solid #0f766e; }
+@media(max-width:900px) { .clinical-banner { grid-template-columns: 1fr; }.bi-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }.metric-card { padding: 16px; } }
+@media(max-width:600px) { .summary-grid { grid-template-columns: 1fr; }.bi-chart { padding: 18px; }.metric-card > strong { font-size: 28px; }.schedule-editor > section { align-items: flex-start; }.patient-appointment { align-items: flex-start; }.calendar-grid { min-width: max-content; }.calendar-day { min-width: 220px!important; } }
 .patients-page label { display: flex; flex-direction: column; gap: 8px; font-size: 14px; font-weight: 600; }
 .patients-page :is(input:not([type="checkbox"]), select, textarea) {
   width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #a7b7bf;
@@ -229,6 +316,55 @@ button:disabled { opacity: .65; cursor: wait; }
 .details-grid dt { font-size: 13px; color: #53616b; margin-bottom: 6px; }
 .details-grid dd { margin: 0; font-size: 15px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .success-message { color: #116052; background: #e7f5f2; padding: 14px 20px; border-radius: 8px; }
+.clinical-page h2 { font-size: 20px; }
+.clinical-page h3 { font-size: 16px; }
+.clinical-page fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.clinical-page label + label { margin-top: 12px; }
+.clinical-page .form-grid label { margin-top: 0; }
+.patient-picker { margin-bottom: 22px; }
+.patient-picker:last-child { margin-bottom: 0; }
+.patient-results { list-style: none; margin: 12px 0; padding: 0; max-height: 320px; overflow-y: auto; }
+.patient-results button { width: 100%; text-align: left; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; padding: 14px; border: 0; border-bottom: 1px solid #dce3e7; background: #f8fafb; font: inherit; cursor: pointer; }
+.patient-results button:hover { background: #e7f5f2; }
+.patient-results span { font-size: 13px; color: #53616b; }
+.inline-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.section-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; margin-top: 24px; }
+.agenda-day > h2 { padding: 20px 24px; margin: 0; border-bottom: 1px solid #dce3e7; text-transform: capitalize; }
+.appointment { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 18px; padding: 24px; border-bottom: 1px solid #e7ecef; }
+.appointment:last-child { border-bottom: 0; }
+.appointment-time { font-weight: 650; color: #0f766e; font-size: 14px; }
+.appointment-time small { display: block; margin-top: 8px; }
+.appointment-detail .status-badge { margin-left: 12px; }
+.appointment-detail p { margin: 8px 0; overflow-wrap: anywhere; }
+.appointment > .inline-actions { grid-column: 2; }
+.cita-programada { background: #eef0f2; color: #465761; }
+.cita-confirmada { background: #e0ecff; color: #23599b; }
+.cita-atendida { background: #e7f5f2; color: #116052; }
+.cita-cancelada, .cita-no_asistio { background: #fbe9e7; color: #9a2e26; }
+.clinical-tabs { display: flex; overflow-x: auto; gap: 8px; margin-top: 24px; border-bottom: 1px solid #dce3e7; }
+.clinical-tabs button { border: 0; border-bottom: 3px solid transparent; padding: 14px 20px; background: transparent; font: inherit; font-weight: 600; color: #53616b; cursor: pointer; white-space: nowrap; }
+.clinical-tabs button.selected { color: #0f766e; border-color: #0f766e; background: #e7f5f2; }
+.clinical-note, .odontogram { padding: 24px; }
+.clinical-note > header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.note-fields dt { font-size: 13px; color: #53616b; margin-top: 18px; }
+.note-fields dd { margin: 6px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.preserve-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.odontogram-scroll { overflow-x: auto; padding: 0 4px 12px; }
+.tooth-row { display: flex; gap: 6px; width: max-content; margin-bottom: 24px; }
+.tooth { display: grid; place-items: center; gap: 8px; padding: 8px 4px; width: 49px; border: 2px solid transparent; border-radius: 8px; background: transparent; font: inherit; cursor: pointer; }
+.tooth[aria-pressed="true"] { border-color: #0f766e; background: #e7f5f2; }
+.tooth-shape { display: grid; place-items: center; border: 2px solid currentColor; border-radius: 12px 12px 8px 8px; width: 34px; height: 40px; font-size: 22px; }
+.unexamined { color: #68757e; }.healthy { color: #116052; }.finding { color: #b02d22; }.absent { color: #4c51a4; }
+.partial { color: #23599b; }
+.calendar-cancelled { padding: 12px; border-top: 1px solid #dce3e7; }
+.calendar-cancelled button { white-space: normal; text-align: left; }
+.odontogram-legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0; font-size: 13px; font-weight: 600; }
+.tooth-legend::before { content: '●'; margin-right: 6px; }
+.piece-findings { border-top: 1px solid #dce3e7; margin-top: 24px; padding-top: 8px; }
+.audit-item { border-top: 1px solid #dce3e7; padding: 16px 0; }
+.audit-item summary { cursor: pointer; font-size: 14px; font-weight: 600; }
+.audit-item td { min-width: 180px; max-width: 450px; }
+@media (max-width: 600px) { .appointment { grid-template-columns: 1fr; }.appointment > .inline-actions { grid-column: 1; }.clinical-note, .odontogram { padding: 18px; } }
 @media (max-width: 600px) {
   .form-grid, .details-grid { grid-template-columns: 1fr; gap: 18px; }
   .patient-form { padding: 20px; }

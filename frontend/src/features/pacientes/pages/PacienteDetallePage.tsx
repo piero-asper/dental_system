@@ -2,6 +2,8 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Pencil } from 'lucide-react';
 import { mensajeError, pacientesApi } from '../api/pacientesApi';
+import { formatDate } from '@/shared/lib/clinical';
+import { PacienteResumen } from '../components/PacienteResumen';
 
 export function PacienteDetallePage() {
   const { id } = useParams();
@@ -22,7 +24,10 @@ export function PacienteDetallePage() {
       {location.state?.saved && <p className="success-message" role="status">Los datos del paciente se guardaron correctamente.</p>}
       <div className="patient-details surface">
         <section><h2>Datos de contacto</h2><dl className="details-grid"><div><dt>Teléfono</dt><dd>{paciente.telefono || 'Sin registrar'}</dd></div></dl></section>
+        <section><h2>Registro</h2><dl className="details-grid"><div><dt>Fecha de registro</dt><dd><time dateTime={paciente.createdAt}>{formatDate(paciente.createdAt)}</time></dd></div></dl></section>
       </div>
+      <PacienteResumen id={paciente.id}/>
+      <div className="form-actions"><Link className="secondary-button" to={`/historias-clinicas?pacienteId=${paciente.id}`}>Historia clínica</Link><Link className="secondary-button" to="/citas">Consultar agenda</Link></div>
     </>}
   </section>;
 }

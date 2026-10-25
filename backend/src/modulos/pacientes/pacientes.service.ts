@@ -27,9 +27,10 @@ export class PacientesService {
   }
 
   async editar(id: string, dto: EditarPacienteDto) {
-    if (Object.keys(dto).length === 0) throw new BadRequestException('Incluye al menos un dato para actualizar.');
+    const {version,...data} = dto;
+    if (Object.keys(data).length === 0) throw new BadRequestException('Incluye al menos un dato para actualizar.');
     try {
-      const paciente = await this.repository.editar(id, dto);
+      const paciente = await this.repository.editar(id, data,version);
       return this.toResponse(paciente);
     } catch (error) { return this.handleError(error); }
   }

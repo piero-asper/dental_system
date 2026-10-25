@@ -1,0 +1,51 @@
+import { ConflictException } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { PrismaService } from '../src/common/prisma/prisma.service';
+import { CitasRepository } from '../src/modulos/citas/citas.repository';
+import { CitasService } from '../src/modulos/citas/citas.service';
+import { PacientesRepository } from '../src/modulos/pacientes/pacientes.repository';
+import { HistoriasClinicasRepository } from '../src/modulos/historias-clinicas/historias-clinicas.repository';
+import { HistoriasClinicasService } from '../src/modulos/historias-clinicas/historias-clinicas.service';
+import { BiService } from '../src/modulos/bi/bi.service';
+import { AgendaService } from '../src/modulos/agenda/agenda.service';
+const envPath=resolve(__dirname,'../.env');if(existsSync(envPath))process.loadEnvFile(envPath);
+describe('Mejoras y BI con PostgreSQL real y rollback',()=>{
+  const prisma=new PrismaClient();afterAll(()=>prisma.$disconnect());
+  it('comprueba reintentos, bloqueo, versiones, vínculos clínicos y conciliación del BI sin residuos',async()=>{
+    const pacienteId=randomUUID(),actor=randomUUID(),clave=randomUUID(),rollback=new Error('ROLLBACK_MEJORAS_BI');
+    try{await prisma.$transaction(async(tx)=>{
+      const adapter=new Proxy(tx,{get(target,prop){if(prop==='$transaction')return (run:unknown)=>typeof run==='function'?run(tx):Promise.all(run as Promise<unknown>[]);return Reflect.get(target,prop);}}) as unknown as PrismaService;
+      const pacientes=new PacientesRepository(adapter),citas=new CitasService(new CitasRepository(adapter)),historia=new HistoriasClinicasService(new HistoriasClinicasRepository(adapter)),bi=new BiService(adapter),agenda=new AgendaService(adapter);
+      const base=await bi.resumen({desde:'2000-01-01',hasta:'2000-01-03'},actor);
+      const p=await tx.paciente.create({data:{id:pacienteId,tipoDocumento:'SIN_DOCUMENTO',nombres:'Prueba BI',apellidos:'Temporal',createdAt:new Date('2000-01-01T05:00:00Z')}});
+      await tx.agendaVersion.create({data:{vigenteDesde:new Date('1999-12-31'),createdAt:new Date('1999-12-31'),intervalos:Array.from({length:7},(_,dia)=>({dia,inicio:'08:00',fin:'18:00'}))}});
+      const dto={pacienteId,fechaInicio:'2000-01-01T14:00:00Z',fechaFin:'2000-01-01T14:30:00Z',claveSolicitud:clave,motivo:'Prueba transaccional'};
+      const c=await citas.crear(dto,actor);expect((await citas.crear(dto,actor)).id).toBe(c.id);
+      await expect(citas.crear({...dto,motivo:'Contenido diferente'},actor)).rejects.toBeInstanceOf(ConflictException);
+      await expect(citas.crear({...dto,claveSolicitud:randomUUID()},actor)).rejects.toBeInstanceOf(ConflictException);
+      await tx.agendaBloqueo.create({data:{fechaInicio:new Date('2000-01-02T14:00:00Z'),fechaFin:new Date('2000-01-02T15:00:00Z'),motivo:'Prueba',createdAt:new Date('1999-12-31')}});
+      await expect(citas.crear({...dto,claveSolicitud:randomUUID(),fechaInicio:'2000-01-02T14:00:00Z',fechaFin:'2000-01-02T14:30:00Z'},actor)).rejects.toThrow('horario');
+      const updated=await pacientes.editar(p.id,{telefono:'999001122'},p.updatedAt.toISOString());await expect(pacientes.editar(p.id,{telefono:'888001122'},p.updatedAt.toISOString())).rejects.toBeInstanceOf(ConflictException);expect(updated.telefono).toBe('999001122');
+      await citas.cambiarEstado(c.id,{estado:'ATENDIDA',version:c.updatedAt.toISOString()},actor);
+      await historia.crear(p.id,{alergiasRevisadas:true},actor);
+      const draft=await historia.crearEvolucion(p.id,{estado:'BORRADOR',citaId:c.id,diagnostico:'Registro temporal',piezas:['11']},actor);
+      const before=await bi.resumen({desde:'2000-01-01',hasta:'2000-01-03'},actor);expect(before.indicadores.pendientes).toBe(base.indicadores.pendientes+1);
+      await historia.editarEvolucion(p.id,draft.id,{version:draft.updatedAt.toISOString(),estado:'FINALIZADA',diagnostico:'Registro temporal',procedimiento:'Control',citaId:c.id,piezas:['11']},actor);
+      await expect(historia.editarEvolucion(p.id,draft.id,{version:(await tx.evolucionClinica.findUniqueOrThrow({where:{id:draft.id}})).updatedAt.toISOString(),diagnostico:'Cambio',procedimiento:'Control'},actor)).rejects.toThrow('motivo');
+      const snapshot=await bi.resumen({desde:'2000-01-01',hasta:'2000-01-03'},actor);
+      expect(snapshot.indicadores.nuevos).toBe(base.indicadores.nuevos+1);expect(snapshot.indicadores.atendidas).toBe(base.indicadores.atendidas+1);expect(snapshot.indicadores.pendientes).toBe(base.indicadores.pendientes);
+      const detail=bi.detalle({corte:snapshot.corte,metrica:'atendidas',pagina:1},actor);expect(detail.total).toBe(snapshot.indicadores.atendidas);expect(detail.items.some((i)=>i.id===c.id)).toBe(true);
+      expect(()=>bi.detalle({corte:snapshot.corte,metrica:'atendidas',pagina:1},randomUUID())).toThrow('venció');
+      expect(bi.csv({corte:snapshot.corte,metrica:'atendidas',pagina:1},actor)).not.toContain('Registro temporal');
+      await tx.evolucionClinica.create({data:{historiaClinicaId:draft.historiaClinicaId,citaId:c.id,estado:'FINALIZADA',diagnostico:'Segunda nota',procedimiento:'Control'}});
+      expect((await bi.resumen({desde:'2000-01-01',hasta:'2000-01-03'},actor)).indicadores.atendidas).toBe(snapshot.indicadores.atendidas);
+      expect(await tx.citaEvento.count({where:{citaId:c.id}})).toBe(2);
+      expect((await agenda.franjas({fecha:'2000-01-02',duracion:30})).configurada).toBe(true);
+      throw rollback;
+    },{timeout:120000,maxWait:15000});}catch(error){if(error!==rollback)throw error;}
+    expect(await prisma.paciente.count({where:{id:pacienteId}})).toBe(0);expect(await prisma.cita.count({where:{claveSolicitud:clave}})).toBe(0);
+  },150000);
+});

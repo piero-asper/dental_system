@@ -447,17 +447,30 @@ git push origin develop
 
 ### citas
 - Funcion: agenda, reserva, reprogramacion y cancelacion.
-- Endpoints: pendiente de definir en Sprint 3.
+- Endpoints protegidos: `GET /api/citas?desde=ISO&hasta=ISO&estado=OPCIONAL`, `GET /api/citas/:id`, `POST /api/citas`, `PATCH /api/citas/:id/horario`, `PATCH /api/citas/:id/estado`.
 - Tablas: `citas`.
-- Notas: requiere validacion para evitar cruces de agenda.
-- Estado: pendiente.
+- Agenda unica para un odontologo, confirmado por el usuario. Vista diaria/semanal de lunes a domingo, en America/Bogota (UTC-5), independiente de la zona del navegador. Las fechas del API deben incluir zona horaria.
+- Consulta por interseccion de intervalos `[desde, hasta)`, con maximo de 7 dias. Citas de hasta 24 horas, con fin posterior al inicio; se permite registrar fechas historicas.
+- Reserva y reprogramacion requieren paciente activo. Bloqueo transaccional de agenda y restriccion SQL de exclusion para impedir cruces, incluso con escrituras concurrentes. Los horarios contiguos son validos.
+- Programada puede pasar a confirmada, atendida, cancelada o no asistio. Confirmada puede pasar a atendida, cancelada o no asistio. Los estados finales no se reabren ni reprograman. Atencion e inasistencia se registran a partir del inicio de la cita.
+- Cancelacion con motivo obligatorio; canceladas e inasistencias liberan el horario. Las atendidas conservan su ocupacion historica.
+- Los PATCH requieren `version` con el `updatedAt` recibido. Una version obsoleta produce 409: cerrar el formulario, actualizar la agenda y revisar/reabrir la cita antes de reintentar.
+- Estado: implementado y probado; pendiente aceptacion manual e integracion por PR.
 
 ### historias-clinicas
 - Funcion: historia clinica, odontograma y evolucion.
-- Endpoints: pendiente de definir en Sprint 4.
+- Base de endpoints protegidos: `/api/historias-clinicas/:pacienteId`. `GET` consulta, `POST` crea y `PATCH` actualiza antecedentes. `POST /evoluciones` y `PATCH /evoluciones/:id` registran/corrigen evoluciones. `POST /odontograma` y `PATCH /odontograma/:id` registran/corrigen hallazgos. `GET /auditoria?pagina=1&tamanoPagina=20` consulta auditoria paginada (maximo 100 por pagina).
 - Tablas: `historias_clinicas`, `evoluciones_clinicas`, `odontograma_piezas`, `auditoria_historias_clinicas`.
-- Notas: requiere auditoria obligatoria de cambios.
-- Estado: pendiente.
+- Historia unica por paciente; antecedentes, alergias, medicamentos y observaciones opcionales. Un campo vacio significa sin registrar; enviar `null` permite limpiarlo conservando su valor anterior en auditoria.
+- Evoluciones con diagnostico y procedimiento obligatorios, observaciones y fecha de atencion. Las correcciones requieren `version` y dejan rastro de los valores anteriores. No existen endpoints de borrado.
+- Odontograma FDI confirmado por el usuario: permanentes 11-18, 21-28, 31-38 y 41-48; temporales 51-55, 61-65, 71-75 y 81-85. Vista desde el paciente frente al profesional, con derecha del paciente a la izquierda del dibujo.
+- Superficies: GENERAL, MESIAL, DISTAL, VESTIBULAR, LINGUAL, PALATINA, OCLUSAL e INCISAL. Estados: SANO, CARIES, RESTAURADO, AUSENTE, FRACTURADO, ENDODONCIA, CORONA, IMPLANTE y EXTRACCION_INDICADA. Un solo registro por pieza/superficie; sin registro significa sin evaluar. Un hallazgo sano en una superficie no equivale a evaluar toda la pieza.
+- Cada INSERT/UPDATE clinico genera auditoria en PostgreSQL dentro de la misma transaccion. Guarda tabla, registro, accion, valores JSON anteriores/nuevos y `auth_user_id`, obtenido del usuario verificado por el guard y transmitido con `set_config` local a la transaccion. No se aceptan identificadores de autor en el body.
+- Triggers impiden borrar historias, evoluciones y piezas, y modificar/borrar auditorias. La auditoria incluye los antecedentes y notas completas; se consulta solo en rutas autenticadas con `Cache-Control: no-store`.
+- RLS activo en las cuatro tablas clinicas. `authenticated` tiene SELECT con politica de lectura; `anon` no tiene permisos. Las escrituras clinicas directas de authenticated estan revocadas; el backend con Prisma aplica autenticacion y valida el flujo antes de escribir.
+- Todos los PATCH requieren `version` con el `updatedAt` del registro editado. Un 409 conserva el formulario: recargar historia y reabrir la edicion tras revisar los cambios.
+- Acceso desde el menu, la ficha del paciente y las citas mediante `/historias-clinicas?pacienteId=UUID`.
+- Estado: implementado y probado; pendiente aceptacion manual e integracion por PR.
 
 ### tratamientos
 - Funcion: catalogo, precios y presupuestos.
@@ -641,6 +654,7 @@ git push origin develop
 - Cliente API centralizado creado en `shared/lib/apiClient.ts`.
 - Cliente Supabase preparado en `shared/lib/supabaseClient.ts`.
 - Features creados con los mismos nombres de negocio definidos para el proyecto.
+- Catalogo central de modulos en `frontend/src/app/modules.tsx`: genera rutas privadas y menu lateral desde una sola definicion. Todo modulo nuevo sin `Page` muestra automaticamente `Pantalla en Construccion` y su descripcion.
 - Modulo `panel` creado solo en frontend.
 
 ### CI
@@ -707,3 +721,129 @@ git push origin develop
 | 2026-10-14 | Sprint 1 | Cierre de la entrega `v0.1.0`: implementacion y documentacion en PR #2 hacia `develop`, promocion por PR de `develop` a `main`, CI requerido y etiqueta anotada sobre el commit de cierre. El siguiente sprint es pacientes. |
 | 2026-10-14 | Sprint 2 | Se implementaron endpoints protegidos, registro, edicion, ficha, filtros y paginacion con nombres y apellidos obligatorios y telefono opcional, segun el alcance confirmado en la imagen del usuario. Se agregaron validaciones, Swagger y pruebas de servicios/HTTP/frontend y PostgreSQL real con rollback. Pendiente revision visual e integracion antes de cerrar. |
 | 2026-10-14 | Sprint 2 | El usuario confirmo el funcionamiento correcto del modulo. Cierre de entrega `v0.2.0`: busqueda automatica tras 300 ms, estado inmediato y retorno al listado al guardar una edicion, documentacion actualizada y version alineada en backend/frontend/Swagger. Validacion: 71 pruebas locales, incluidas las pruebas de PostgreSQL real con rollback; integracion por PR con CI obligatorio. El siguiente sprint es citas. |
+
+## Validacion y entrega de los Sprints 3 y 4 (2026-10-17)
+
+El usuario autorizo avanzar ambos sprints y confirmo agenda para un solo odontologo y numeracion FDI. El trabajo esta en `codex/s3-s4-citas-historias`, creada desde `develop`. La migracion `20261018020000_sprints3_4_integridad_clinica` se aplico con `prisma migrate deploy` en Supabase. No hace falta ejecutar SQL manual para esta entrega. El script RLS inicial es repetible y conserva las restricciones clinicas nuevas.
+
+Validacion automatizada: 31 pruebas unitarias backend, 77 HTTP, 29 frontend y 2 pruebas PostgreSQL: 139 en total. Las pruebas de base de datos se ejecutan con rollback y verifican que no queden pacientes, citas, historias ni auditorias temporales. Comprueban reservas contiguas, rechazo de cruces, cancelacion, historia unica, evoluciones, FDI, auditoria con autor y valores anteriores/nuevos, restricciones de borrado y permisos. `npm run auth:check` verifico una cuenta confirmada, registro publico desactivado, 14 tablas con RLS, ningun acceso anonimo y escritura clinica directa bloqueada. Las compilaciones de ambos proyectos pasan. Se revisaron agenda y odontograma en navegador con datos ficticios y se corrigio el desbordamiento en pantalla estrecha.
+
+### Prueba manual pendiente
+
+1. Con backend (`npm run start:dev`) y frontend (`npm run dev`) activos, abrir http://localhost:5173 e iniciar sesion con la cuenta operativa.
+2. En Citas, buscar un paciente activo y reservar una cita. Intentar otra que cruce el horario: debe rechazarse. Revisar vista semanal, reprogramacion, confirmacion y cancelacion con motivo. Las citas canceladas conservan el registro y liberan el horario.
+3. Abrir la historia desde la ficha o la cita. Crear/editar antecedentes, registrar una evolucion y corregirla. En Odontograma, seleccionar pieza y superficie, registrar un hallazgo y actualizarlo.
+4. Revisar Auditoria: debe mostrar cada cambio con valores anteriores y nuevos. Recargar la pagina y comprobar la persistencia.
+5. Confirmar con el usuario el flujo de trabajo y la presentacion del odontograma antes de cerrar los sprints.
+
+La aceptacion manual y la integracion por PR siguen pendientes. Se conserva la version v0.2.0 hasta preparar la entrega formal; todavia no existen etiquetas nuevas para estos sprints.
+
+### Guardado e integracion pendientes
+
+Desde la raiz, despues de revisar la prueba manual:
+
+```powershell
+git status
+git add .github/workflows/ci.yml backend frontend docs
+git diff --cached --name-only
+git commit -m "feat(clinica): implementar citas e historias clinicas"
+git push -u origin codex/s3-s4-citas-historias
+```
+
+Verificar que no se prepare ningun `.env` real. Crear PR `codex/s3-s4-citas-historias` -> `develop`, comprobar Backend y Frontend en CI y hacer merge tras revision. Crear despues PR `develop` -> `main` y exigir los mismos checks. La rama `codex/*` queda incluida en el CI. La entrega agrupa ambos sprints por solicitud del usuario; la version y la etiqueta se acuerdan al aceptar y cerrar la entrega.
+
+Limpieza despues de integrar:
+
+```powershell
+git switch develop
+git pull origin develop
+git branch -d codex/s3-s4-citas-historias
+git push origin --delete codex/s3-s4-citas-historias
+```
+
+Para etiquetar la entrega, solo despues de definir la version y del merge a main:
+
+```powershell
+git switch main
+git pull origin main
+$versionEntrega = Read-Host 'Version de entrega acordada (vX.Y.Z)'
+git tag -a $versionEntrega -m "Sprints 3 y 4: citas e historias clinicas"
+git push origin $versionEntrega
+```
+
+### Alta de modulos y pantalla de construccion
+
+Para incorporar un modulo nuevo, agregar su definicion a `modules` en `frontend/src/app/modules.tsx` con `path`, `title`, `description` e `icon`; `label` es opcional para abreviar el nombre del menu. La ruta y el acceso del menu se generan automaticamente, dentro de la proteccion de sesion existente. Mientras no tenga `Page`, muestra el componente compartido `ModulePlaceholder` con el aviso `Pantalla en Construccion` y, debajo, una descripcion breve de su funcion futura. No es necesario crear una pagina vacia ni editar por separado el router y la navegacion.
+
+Ejemplo:
+
+```tsx
+{ path: 'laboratorio', title: 'Laboratorio', description: 'Permitirá consultar los trabajos enviados al laboratorio.', icon: Package }
+```
+
+Cuando el modulo este implementado, importar su componente y agregar `Page: LaboratorioPage` a esa misma definicion. El contenido funcional reemplaza automaticamente el aviso. Las rutas secundarias, como formularios o detalles, se agregan en el router cuando sean necesarias.
+
+Panel, Tratamientos, Pagos, Inventario y Reportes muestran actualmente el aviso. Pacientes, Citas e Historias clinicas conservan sus paginas funcionales. Los nuevos modulos deben registrarse en este catalogo para obtener el comportamiento automatico.
+
+## Plan de mejoras y BI (2026-10-18)
+
+El usuario decidió descartar IA y enfocar la siguiente etapa en mejorar Pacientes, Citas e Historias clínicas e incorporar inteligencia de negocios dentro de Panel y Reportes. El [plan de mejoras y BI](PLAN_MEJORAS_BI.md) define las entregas M0–M5, dependencias, tareas de frontend/backend, criterios de aceptación y reglas de cálculo de indicadores. Existe una implementación inicial de M0–M4 con migración aplicada; la revisión final, aceptación e integración siguen pendientes. El [estado de avance](ESTADO_AVANCE.md) registra las comprobaciones realizadas y los pasos para retomar. Panel y Reportes ya tienen páginas de BI; su mención anterior como pantallas de construcción corresponde al estado previo a estas mejoras.
+
+## Uso de agenda, historia clínica y BI
+
+El panel adopta una interfaz clínica con barra lateral azul petróleo, acentos verde azulado, indicadores, próximas citas y seguimiento. Sus tarjetas y puntos del gráfico abren registros del mismo corte de BI. La búsqueda superior abre Pacientes con el texto introducido. Los filtros Programadas/Confirmadas se aplican a las cinco próximas reservas; Agenda conserva el listado completo. La tarjeta «Próxima atención» muestra una reserva futura y no presupone que el paciente ya está en consulta. No se incorporan cifras financieras ni tratamientos de ejemplo.
+
+El seguimiento del proyecto se divide en [sprints de backend](SPRINTS_BACKEND.md) y [sprints de frontend](SPRINTS_FRONTEND.md), con un [índice general](SPRINT.md). Este rediseño pertenece a FE-8.
+
+**Apariencia en curso:** el usuario no ha aceptado los colores actuales. La última paleta explorada (`#0C4A6E`, `#2B6CB0`, `#1C3F72`, `#EBF8FF` y blanco) sólo se mostró en una muestra independiente y no está aplicada al sistema. Los ajustes y la aceptación visual siguen pendientes en [Apariencia pendiente](APARIENCIA_PENDIENTE.md); guardar el avance en GitHub no supone cerrar FE-8.
+
+1. Iniciar sesión con la cuenta operativa. Buscar o registrar al paciente; nombres y apellidos son obligatorios, teléfono opcional. Las coincidencias por nombre o teléfono son avisos y permiten continuar si son personas distintas.
+2. En Citas → Horario y bloqueos, revisar y guardar el horario real. La propuesta inicial no se aplica automáticamente. Los cambios posteriores comienzan desde mañana y se rechazan si afectan citas pendientes; resolver esas citas explícitamente antes de cambiar la disponibilidad.
+3. Reservar desde la ficha o una franja libre. La cuadrícula presenta opciones cada 30 minutos; el formulario también permite elegir los inicios disponibles cada 15 minutos y ajustar la duración. Reprogramar y cambiar estado conservan versiones e historial. Cancelar requiere motivo y libera el horario; las canceladas aparecen aparte de los bloques para conservar el acceso a su detalle.
+4. Abrir la historia del paciente correcto. Marcar expresamente si se revisaron alergias y medicamentos: un campo vacío sin revisión no significa ausencia reportada. Registrar evoluciones como borrador o finalizadas; un borrador no cuenta como documentación completa. Corregir una finalizada requiere motivo. Para quitar una cita asociada, seleccionar «Atención sin cita vinculada»; se conserva la auditoría.
+5. En el odontograma, seleccionar dentición, pieza y superficie. Una superficie sana no evalúa las restantes. Las superficies admiten teclado con Tab y Enter/Espacio; el historial conserva los valores anteriores.
+6. Consultar Panel/Reportes con inicio incluido y fin excluido en Colombia. El panel añade las cinco próximas citas programadas o confirmadas. Seleccionar tarjetas, barras o celdas para abrir el detalle; exportar ese detalle mediante CSV.
+
+Los formularios avisan al salir con cambios sin guardar. Ante conflictos de versión, conservar lo escrito, revisar la ficha vigente y decidir cómo incorporar los cambios; no se sobrescribe automáticamente otra edición. «Recargar historia» pide confirmar el descarte y restaura los formularios.
+
+Los indicadores reflejan estados registrados al consultar. La tasa de inasistencia usa únicamente citas ya iniciadas y abre el detalle de esas inasistencias. La ocupación cuenta la unión de intervalos reservados dentro del horario efectivo. Sin base de cálculo se muestra «Sin base de cálculo»; sin disponibilidad histórica suficiente, «No disponible». Consultar el [diccionario de indicadores](PLAN_MEJORAS_BI.md#definición-inicial-de-indicadores) para las reglas restantes.
+
+Cada resumen de BI devuelve un corte común para tarjetas, gráficos, detalle y CSV. Expira a los cinco minutos o al reiniciar la API; se mantienen hasta diez cortes recientes por proceso. Un corte vencido devuelve HTTP 410 y requiere actualizar los indicadores. El detalle tiene 20 filas por página; CSV admite hasta 5000 filas y no incluye narrativas clínicas. Las consultas de resumen admiten periodos de 1 a 366 días, con un límite de 50000 filas analíticas.
+
+### Endpoints añadidos en las mejoras
+
+Todas las rutas usan el prefijo `/api` y requieren autenticación. Los DTO y parámetros están disponibles en `/api/docs`.
+
+| Método | Ruta | Uso |
+|---|---|---|
+| GET | `/pacientes/coincidencias?q=...` | Coincidencias administrativas; máximo cinco por búsqueda |
+| GET | `/pacientes/:id/resumen` | Última atención, próxima cita, historia y cantidad de citas |
+| GET | `/pacientes/:id/citas` | Citas paginadas del paciente |
+| GET / POST | `/agenda/configuracion` | Consultar versiones / guardar nueva disponibilidad |
+| GET | `/agenda/disponibilidad?fecha=AAAA-MM-DD&duracion=30` | Disponibilidad efectiva y franjas libres; `excluir` permite consultar una reprogramación |
+| POST | `/agenda/bloqueos` | Bloquear un intervalo futuro sin alterar citas existentes |
+| PATCH | `/agenda/bloqueos/:id/cancelar` | Cancelar un bloqueo usando su versión |
+| PATCH | `/citas/:id` | Editar motivo/notas con control de versión |
+| GET | `/citas/:id/eventos` | Historial de creación y cambios |
+| GET | `/historias-clinicas/:pacienteId/evoluciones` | Evoluciones paginadas por texto, fecha, pieza y estado |
+| GET | `/historias-clinicas/:pacienteId/odontograma` | Hallazgos por pieza y superficie |
+| GET | `/bi/resumen?desde=AAAA-MM-DD&hasta=AAAA-MM-DD` | Indicadores, comparación, series, demanda, próximas citas y corte |
+| GET | `/bi/detalle?corte=UUID&metrica=nuevos&pagina=1` | Registros del mismo corte |
+| GET | `/bi/exportar?corte=UUID&metrica=nuevos` | CSV de los registros del corte |
+
+### Arranque y diagnóstico
+
+En terminales distintas, desde la raíz del repositorio:
+
+```powershell
+npm --prefix backend run build
+npm --prefix backend run start:prod
+```
+
+```powershell
+npm --prefix frontend run dev
+```
+
+Abrir `http://localhost:5173`. La API usa `http://localhost:3000/api` salvo cambio explícito en la configuración local. `GET /api/health` comprueba el proceso y `GET /api/health/dependencias` comprueba PostgreSQL y Supabase Auth por separado. `npm --prefix backend run auth:check` verifica la cuenta y los permisos de las 17 tablas sin mostrar secretos. Si aparece `ENOTFOUND`, comprobar el estado del proyecto en Supabase; si está pausado o restaurándose, esperar a que vuelva a estar disponible antes de arrancar la API.
+
+La validación automatizada usa `npm test -- --runInBand`, `npm run test:e2e -- --runInBand` y `npm run test:db` desde backend, y `npm test -- --run` desde frontend. Las pruebas de PostgreSQL usan rollback y verifican ausencia de residuos. La aceptación manual y la integración por PR/CI siguen pendientes.
