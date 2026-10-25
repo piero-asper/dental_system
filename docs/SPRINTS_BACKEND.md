@@ -96,6 +96,7 @@ Mejoras posteriores aún pendientes de integrar: resumen y citas del paciente, b
 
 ## BE-9 · Preparación de producción — ⬜ pendiente
 
+- [ ] Evaluar e incorporar un entorno local con Podman y Compose para la API, coordinado con FE-9. Propuesta conversada con el usuario; todavía sin implementar ni validar. Mantener inicialmente PostgreSQL y Auth en Supabase; no migrar los datos clínicos. Documentar variables externas a las imágenes, puertos y arranque conjunto.
 - [ ] QA de API y reglas de negocio; revisión de consultas según mediciones.
 - [ ] Seguridad, permisos, dependencias y estrategia de respaldo/restauración.
 - [ ] Revisión con la clínica de conservación y tratamiento de datos.

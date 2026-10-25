@@ -110,6 +110,7 @@ Las mejoras de ficha integral, seguimiento y protección de cambios son posterio
 
 ## FE-9 · QA y entrega — ⬜ pendiente
 
+- [ ] Evaluar e incorporar el frontend al entorno local de Podman/Compose junto con BE-9. Propuesta pendiente de implementación: arranque conjunto, conexión con la API y autenticación de Supabase, revisión en navegador y documentación. La apariencia de FE-8 sigue pendiente por separado.
 - [ ] Recorrido completo con cuenta real, escritorio/móvil y teclado.
 - [ ] Revisión de accesibilidad, mensajes, contraste y navegación.
 - [ ] Rendimiento de carga medido y ajustes justificados.
