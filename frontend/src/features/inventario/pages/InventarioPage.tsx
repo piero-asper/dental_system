@@ -14,7 +14,7 @@ export function InventarioPage() {
   const [editor, setEditor] = useState<Insumo | 'nuevo' | null>(null), [movimientos, setMovimientos] = useState<Insumo | null>(null), [success, setSuccess] = useState('');
   const query = new URLSearchParams({ q, estado, stock, pagina: String(pagina) });
   const list = useQuery({ queryKey: ['inventario', query.toString()], queryFn: ({ signal }) => inventarioApi.listar(query, signal), retry: false });
-  return <section className="patients-page clinical-page"><header className="module-header page-header"><div><p className="eyebrow">Insumos de la clínica</p><h1>Inventario</h1><p>Controla las existencias y consulta cada entrada, salida y ajuste.</p></div></header>
+  return <section className="patients-page clinical-page inventory-page"><header className="module-header page-header"><div><p className="eyebrow">Insumos de la clínica</p><h1>Inventario</h1><p>Controla las existencias y consulta cada entrada, salida y ajuste.</p></div></header>
     <div className="patient-search surface"><label>Buscar insumo<input type="search" maxLength={100} value={q} onChange={(e) => { setQ(e.target.value); setPagina(1); }} /></label>
       <label>Estado<select value={estado} onChange={(e) => { setEstado(e.target.value); setPagina(1); }}><option value="todos">Todos</option><option value="activos">Activos</option><option value="inactivos">Inactivos</option></select></label>
       <label>Existencias<select value={stock} onChange={(e) => { setStock(e.target.value); setPagina(1); }}><option value="todos">Todas</option><option value="bajo">En mínimo o por debajo</option></select></label>

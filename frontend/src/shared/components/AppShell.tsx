@@ -1,14 +1,15 @@
-import { ChevronRight, LogOut } from 'lucide-react';
+import { ChevronRight, LogOut, UserRound } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { confirmDiscard, UnsavedNavigation } from './UnsavedChanges';
+import { BrandLogo } from './BrandLogo';
 
 type NavigationItem = { to: string; label: string; icon: LucideIcon; section?: string };
 
 export function AppShell({ navigation }: { navigation: readonly NavigationItem[] }) {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const location = useLocation();
   const isDashboard = useLocation().pathname === '/panel';
   const [closing, setClosing] = useState(false);
@@ -29,10 +30,7 @@ export function AppShell({ navigation }: { navigation: readonly NavigationItem[]
     <div className={`app-shell dental-shell${isDashboard ? ' dashboard-shell' : ''}`}>
       <UnsavedNavigation />
       <aside className="sidebar" aria-label="Navegacion principal">
-        <div className="brand">
-          <span className="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M16 6C11 2 5 5 6 12c.4 4 2 7 3 12 .6 3 2 4 3 1l2-7c.5-2 3-2 3.6 0l2 7c1 3 2.5 2 3.2-1 1-5 2.7-8 3-12C27 5 21 2 16 6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><path d="M11 8c2-.6 3 1 5 1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg></span>
-          <span>Sistema Dental</span>
-        </div>
+        <div className="brand"><BrandLogo inverse /></div>
         <div className="sidebar-clinic"><strong>Consultorio dental</strong><span>Una cuenta · Una agenda</span></div>
         <nav aria-label="Módulos del sistema">
           {sections.map((section) => <section className="sidebar-module-section" key={section} aria-label={section}>
@@ -53,7 +51,13 @@ export function AppShell({ navigation }: { navigation: readonly NavigationItem[]
       <main className="main-content">
         <header className="app-topbar">
           <nav aria-label="Ubicación"><span>Mi clínica</span><ChevronRight size={14} aria-hidden="true"/><strong>{activeModule?.label ?? 'Sistema Dental'}</strong></nav>
-          <div className="app-topbar-actions"><span className="app-account">Cuenta de la clínica</span><button className="secondary-button logout-button" disabled={closing} onClick={() => { void handleSignOut(); }}><LogOut aria-hidden="true" size={17}/>{closing ? 'Cerrando…' : 'Cerrar sesión'}</button></div>
+          <div className="app-topbar-actions">
+            <div className="app-profile">
+              <span className="app-profile-avatar" aria-hidden="true"><UserRound size={16} /></span>
+              <span><strong>Cuenta de la clínica</strong><small>{user?.email ?? 'Gestión clínica'}</small></span>
+            </div>
+            <button className="secondary-button logout-button" disabled={closing} onClick={() => { void handleSignOut(); }}><LogOut aria-hidden="true" size={17}/>{closing ? 'Cerrando…' : 'Cerrar sesión'}</button>
+          </div>
         </header>
         {error && <p className="form-error topbar-error" role="alert">{error}</p>}
         <Outlet />

@@ -32,7 +32,7 @@ export function MovimientosPanel({ original, onClose }: { original: Insumo; onCl
     </div>{tipo === 'AJUSTE' && <p className="field-hint">Introduce el total contado físicamente. El historial conservará las existencias anteriores y las nuevas.</p>}
       <button className="primary-button" disabled={saving}>{saving ? 'Registrando…' : 'Registrar movimiento'}</button></fieldset></form> : <p className="notice-warning">Este insumo está inactivo. Su historial se conserva; actívalo para registrar movimientos.</p>}
     {success && <p className="success-message" role="status">{success}</p>}{error && <p className="form-error" role="alert">{error}</p>}
-    <h3>Historial</h3>{list.isPending && <p role="status">Cargando movimientos…</p>}
+    <h3>Kardex de movimientos</h3>{list.isPending && <p role="status">Cargando movimientos…</p>}
     {list.isError && <RequestError error={list.error} retry={() => { void list.refetch(); }} />}
     {list.data && <>{list.data.items.length ? <div className="table-scroll"><table className="patients-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Cantidad</th><th>Anterior</th><th>Resultado</th><th>Motivo</th></tr></thead><tbody>
       {list.data.items.map((item) => <tr key={item.id}><td>{new Date(item.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota' })}</td><td>{item.tipo === 'AJUSTE' ? 'Ajuste a existencia final' : item.tipo === 'ENTRADA' ? 'Entrada' : 'Salida'}</td><td>{mostrarImporte(item.cantidad)}</td><td>{mostrarImporte(item.stockAnterior)}</td><td>{mostrarImporte(item.stockNuevo)}</td><td>{item.motivo}</td></tr>)}
