@@ -14,7 +14,7 @@ function reason(error) {
 
 const tables = ['pacientes', 'citas', 'historias_clinicas', 'evoluciones_clinicas',
   'odontograma_piezas', 'auditoria_historias_clinicas', 'tratamientos', 'presupuestos',
-  'presupuesto_items', 'pagos', 'comprobantes', 'caja_movimientos', 'insumos', 'inventario_movimientos','agenda_versiones','agenda_bloqueos','cita_eventos'];
+  'presupuesto_items', 'pagos', 'comprobantes', 'caja_movimientos', 'insumos', 'inventario_movimientos','agenda_versiones','agenda_bloqueos','cita_eventos','secuencias_comprobantes'];
 
 async function main() {
   const frontendPath = path.resolve(__dirname, '../../frontend/.env');
@@ -69,7 +69,8 @@ async function main() {
       FROM pg_policies WHERE schemaname = 'public'
     `;
     const domainPolicies = policies.filter((row) => tables.includes(row.tablename));
-    const clinicalTables = ['historias_clinicas', 'evoluciones_clinicas', 'odontograma_piezas', 'auditoria_historias_clinicas','agenda_versiones','agenda_bloqueos','cita_eventos'];
+    const clinicalTables = ['historias_clinicas', 'evoluciones_clinicas', 'odontograma_piezas', 'auditoria_historias_clinicas','agenda_versiones','agenda_bloqueos','cita_eventos',
+      'tratamientos','presupuestos','presupuesto_items','insumos','inventario_movimientos','pagos','comprobantes','caja_movimientos','secuencias_comprobantes'];
     const expected = domainPolicies.length === tables.length && domainPolicies.every((row) =>
       row.roles === '{authenticated}' && row.qual === 'true' &&
       (clinicalTables.includes(row.tablename) ? row.cmd === 'SELECT' && row.with_check === null : row.cmd === 'ALL' && row.with_check === 'true'));
@@ -79,10 +80,10 @@ async function main() {
       SELECT relname AS tabla,
         has_table_privilege('authenticated', c.oid, 'INSERT,UPDATE,DELETE,TRUNCATE') AS escritura_directa
       FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
-      WHERE n.nspname = 'public' AND c.relname IN ('historias_clinicas','evoluciones_clinicas','odontograma_piezas','auditoria_historias_clinicas','agenda_versiones','agenda_bloqueos','cita_eventos')
+      WHERE n.nspname = 'public' AND c.relname IN ('historias_clinicas','evoluciones_clinicas','odontograma_piezas','auditoria_historias_clinicas','agenda_versiones','agenda_bloqueos','cita_eventos','tratamientos','presupuestos','presupuesto_items','insumos','inventario_movimientos','pagos','comprobantes','caja_movimientos','secuencias_comprobantes')
     `;
-    const protectedClinicalWrites = clinicalPermissions.length === 7 && clinicalPermissions.every((row) => !row.escritura_directa);
-    console.log('Escrituras clinicas directas bloqueadas:', protectedClinicalWrites);
+    const protectedClinicalWrites = clinicalPermissions.length === 16 && clinicalPermissions.every((row) => !row.escritura_directa);
+    console.log('Escrituras sensibles directas bloqueadas:', protectedClinicalWrites);
     if (!protectedClinicalWrites) process.exitCode = 1;
   } catch (error) { console.log(`No se pudo inspeccionar RLS en PostgreSQL${reason(error)}.`); process.exitCode = 1; }
   finally { await prisma.$disconnect(); }

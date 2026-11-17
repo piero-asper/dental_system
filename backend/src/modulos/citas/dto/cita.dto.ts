@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EstadoCita } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsISO8601, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, MaxLength, ValidateIf } from 'class-validator';

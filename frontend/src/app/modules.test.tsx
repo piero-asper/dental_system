@@ -23,12 +23,24 @@ function ModuleRoutes({ definitions }: { definitions: readonly ModuleDefinition[
 }
 
 describe('modulos pendientes y nuevos', () => {
-  it.each(['tratamientos', 'pagos', 'inventario'])('muestra aviso y descripcion al abrir %s', (path) => {
-    start(modules, `/${path}`);
-    const definition = modules.find((item) => item.path === path)!;
-    expect(screen.getByRole('heading', { level: 1, name: definition.title })).toBeDefined();
-    expect(screen.getByRole('heading', { name: 'Pantalla en Construccion' })).toBeDefined();
-    expect(screen.getByText(definition.description)).toBeDefined();
+  it('conecta todos los módulos y agrupa el lateral por su flujo', () => {
+    expect(modules.every((item) => !!item.Page)).toBe(true);
+    const navigation = createModuleNavigation(modules);
+    expect(navigation.filter((item) => item.section === 'Pacientes y citas').map((item) => item.to)).toEqual(['/pacientes', '/citas']);
+    expect(navigation.filter((item) => item.section === 'Atención clínica').map((item) => item.to)).toEqual(['/historias-clinicas', '/tratamientos']);
+    expect(navigation.find((item) => item.to === '/pagos')?.section).toBe('Pagos');
+    expect(navigation.find((item) => item.to === '/inventario')?.section).toBe('Inventario');
+  });
+  it('muestra las secciones sin duplicar sus enlaces', () => {
+    const definitions: ModuleDefinition[] = [
+      { path: 'pacientes', title: 'Pacientes', description: '', icon: Package, Page: () => <h1>Lista de pacientes</h1> },
+      { path: 'citas', title: 'Citas', description: '', icon: Package, Page: () => <h1>Agenda</h1> },
+      { path: 'pagos', title: 'Pagos', description: '', icon: Package, Page: () => <h1>Cobros</h1> }
+    ];
+    start(definitions, '/pacientes');
+    expect(screen.getByRole('heading', { name: 'Pacientes y citas' })).toBeDefined();
+    expect(screen.getAllByRole('link', { name: 'Citas' })).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: 'Pagos' })).toBeDefined();
   });
 
   it('un nuevo modulo se abre desde el menu con el aviso sin crear su pagina', async () => {

@@ -63,27 +63,32 @@ Mejoras posteriores aún pendientes de integrar: resumen y citas del paciente, b
 - [x] Migraciones aditivas aplicadas; se preservaron registros anteriores.
 - [ ] Aceptar los criterios completos del [plan M0–M5](PLAN_MEJORAS_BI.md) junto a frontend.
 
-## BE-5 · Tratamientos — ⬜ pendiente
+## BE-5 · Tratamientos — 🟨 primera implementación del 5 de noviembre; aceptación pendiente
 
-- [ ] Catálogo, precios y validaciones.
-- [ ] Presupuestos e ítems por paciente; reglas de cambio de estado.
-- [ ] Endpoints autenticados y contratos para FE-5.
-- [ ] Pruebas de negocio, repositorio y HTTP; Swagger y migraciones/permisos.
+- [x] Catálogo, precios decimales, búsqueda, paginación y edición versionada.
+- [x] Presupuestos e ítems por paciente activo, precios históricos, descuentos y transiciones de estado; edición de borradores.
+- [x] Endpoints autenticados y contratos para FE-5; Swagger y migración de permisos/integridad.
+- [ ] Aceptación con la cuenta real e integración por PR/CI. Evidencia de pruebas en el estado de avance.
 
-## BE-6 · Pagos — ⬜ pendiente
+## BE-6 · Pagos — 🟨 implementado el 5 de noviembre; aceptación pendiente
 
-- [ ] Registro de cobros y conciliación con presupuestos.
-- [ ] Caja diaria, deudas y comprobantes.
-- [ ] Definir numeración de comprobantes con la clínica.
-- [ ] Consistencia de importes, pruebas, contratos para FE-6 y Swagger.
+- [x] Abonos a presupuestos aceptados/finalizados, saldo decimal exacto y prevención transaccional de sobrepagos.
+- [x] Solicitudes idempotentes; recibo interno REC correlativo y movimiento de caja atómicos.
+- [x] Anulación versionada con motivo, actor, recibo anulado y reversión en la fecha actual; registros conservados.
+- [x] Cartera paginada y reporte de caja por periodo/medio, detalle y CSV del mismo corte de cinco minutos.
+- [x] Migración validada con rollback y aplicada; permisos restringidos y pruebas unitarias/HTTP/PostgreSQL correctas.
+- [x] Contratos y reglas documentados en Swagger y en la guía de uso.
+- [ ] Aceptación de flujos con la clínica e integración por PR/CI.
+- [ ] Cualquier facturación electrónica requiere definir datos/series e integración por separado; la entrega actual utiliza constancias internas REC.
 
-## BE-7 · Inventario — ⬜ pendiente
+## BE-7 · Inventario — 🟨 primera implementación del 5 de noviembre; aceptación pendiente
 
-- [ ] Insumos, existencias y movimientos.
-- [ ] Validaciones y consistencia del stock; alertas de mínimo.
-- [ ] Endpoints para FE-7, pruebas, migraciones y Swagger.
+- [x] Insumos, existencias, entradas/salidas y ajuste con motivo e historial inmutable.
+- [x] Bloqueo transaccional y versiones; stock no negativo y filtro de mínimo.
+- [x] Endpoints autenticados para FE-7, migración de permisos/integridad y Swagger.
+- [ ] Aceptación de unidades, mínimos y movimientos con la clínica e integración por PR/CI.
 
-## BE-8 · BI y reportes — 🟨 parte operativa implementada; parte financiera pendiente
+## BE-8 · BI y reportes — 🟨 operativo y financiero implementados; aceptación pendiente
 
 - [x] Indicadores operativos, periodos de Colombia, comparación y series diarias.
 - [x] Demanda, ocupación con disponibilidad histórica y registros que explican cada cifra.
@@ -91,12 +96,12 @@ Mejoras posteriores aún pendientes de integrar: resumen y citas del paciente, b
 - [x] Exportación administrativa sin narrativas clínicas y protección de fórmulas CSV.
 - [x] Próximas citas y pruebas con datos conocidos; parámetros documentados.
 - [ ] Aceptación de conciliación de cifras, detalles y exportación con FE-8.
-- [ ] Indicadores financieros después de BE-5/BE-6; no se simulan ingresos ni deudas.
+- [x] Resumen financiero desde Pagos: ingresos, reversiones, neto por medio y cartera actual. Corte compartido entre resumen, detalle y CSV; límites de periodo/filas y autenticación.
 - [ ] Integración por PR/CI.
 
 ## BE-9 · Preparación de producción — ⬜ pendiente
 
-- [ ] Evaluar e incorporar un entorno local con Podman y Compose para la API, coordinado con FE-9. Propuesta conversada con el usuario; todavía sin implementar ni validar. Mantener inicialmente PostgreSQL y Auth en Supabase; no migrar los datos clínicos. Documentar variables externas a las imágenes, puertos y arranque conjunto.
+- [x] Entorno local con Podman y Compose para la API, coordinado con FE-9: imagen Node.js 22 con Prisma generado en Linux, ejecución sin privilegios, salud y puertos locales. PostgreSQL y Auth permanecen en Supabase; no se ejecutan migraciones. Arranque, conexión remota, CORS y protección HTTP verificados el 26 de octubre. [Guía operativa](PODMAN.md).
 - [ ] QA de API y reglas de negocio; revisión de consultas según mediciones.
 - [ ] Seguridad, permisos, dependencias y estrategia de respaldo/restauración.
 - [ ] Revisión con la clínica de conservación y tratamiento de datos.

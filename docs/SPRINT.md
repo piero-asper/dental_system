@@ -11,6 +11,8 @@ El seguimiento se divide por capa para distinguir el trabajo de datos y reglas d
 
 ## Trabajo actual
 
+**Actualización del 5 de noviembre:** módulos funcionales conectados a backend, incluido BE-6/FE-6 Pagos (abonos, saldos, recibos internos, anulaciones y caja). Panel y Reportes incorporan el resumen financiero. Lateral agrupado por flujo y [guía de uso completa](GUIA_FLUJOS.md), disponible también dentro de la aplicación. Se conserva pendiente la aceptación con la clínica y la entrega por PR/CI; el diseño definitivo se revisará después por decisión del usuario.
+
 **Frontend: FE-8 — apariencia del sistema pendiente de continuar.** La composición inicial del panel y la navegación está implementada, pero los colores no fueron aceptados. La última paleta explorada es `#0C4A6E`, `#2B6CB0`, `#1C3F72` y `#EBF8FF`, con tarjetas blancas; sólo se mostró en una muestra y todavía no está aplicada al código. Continuar desde [Apariencia pendiente](APARIENCIA_PENDIENTE.md). Es una tarea de presentación conectada a la API existente.
 
 **Backend: BE-8 — BI operativo implementado y verificado, con aceptación e integración pendientes.** El rediseño no añade servicios, gabinetes, profesionales, ingresos ni tratamientos ficticios.
@@ -27,13 +29,13 @@ Citas e Historias clínicas conservan su aceptación conjunta pendiente. La apli
 | 3. Citas | 🟨 BE-3 implementado; cierre pendiente | 🟨 FE-3 funcional; aceptación pendiente |
 | 4. Historias clínicas | 🟨 BE-4 implementado; cierre pendiente | 🟨 FE-4 funcional; aceptación pendiente |
 | Mejoras M0–M3 | 🟨 BE-M0–M3 verificados; aceptación pendiente | 🟨 FE-M0–M3 verificados; aceptación pendiente |
-| 5. Tratamientos | ⬜ BE-5 pendiente | ⬜ FE-5 pendiente |
-| 6. Pagos | ⬜ BE-6 pendiente | ⬜ FE-6 pendiente |
-| 7. Inventario | ⬜ BE-7 pendiente | ⬜ FE-7 pendiente |
-| 8. Panel y reportes | 🟨 BE-8 operativo; financiera pendiente | 🟨 FE-8 operativo; rediseño en revisión |
+| 5. Tratamientos | 🟨 BE-5 implementado el 5 de noviembre; aceptación pendiente | 🟨 FE-5 conectado; aceptación pendiente |
+| 6. Pagos | 🟨 BE-6 implementado y verificado; aceptación pendiente | 🟨 FE-6 conectado; aceptación pendiente |
+| 7. Inventario | 🟨 BE-7 implementado el 5 de noviembre; aceptación pendiente | 🟨 FE-7 conectado; aceptación pendiente |
+| 8. Panel y reportes | 🟨 Operativo y financiero implementados; aceptación pendiente | 🟨 Operativo/financiero conectados; diseño definitivo pendiente |
 | 9. QA y producción | ⬜ BE-9 pendiente | ⬜ FE-9 pendiente |
 
-Las mejoras posteriores de Pacientes todavía no forman parte de la entrega v0.2.0. El BI operativo adelanta parte del Sprint 8; la parte financiera depende de Tratamientos y Pagos.
+Las mejoras posteriores de Pacientes todavía no forman parte de la entrega v0.2.0. El BI operativo y los reportes financieros están implementados en la rama de trabajo; requieren aceptación e integración.
 
 ## Cómo registrar el avance
 
@@ -47,6 +49,6 @@ Las mejoras posteriores de Pacientes todavía no forman parte de la entrega v0.2
 
 - Nombres y apellidos obligatorios; teléfono opcional. Se omiten DNI, fecha de nacimiento, sexo, correo, dirección y contacto de emergencia.
 - Revisar con la clínica los requisitos de datos y conservación antes de producción.
-- Definir la numeración de comprobantes antes de Pagos.
+- Recibos internos correlativos REC implementados. Definir por separado con la clínica cualquier facturación electrónica y sus datos/series.
 - Revisar dependencias y permisos como parte de BE-9/FE-9.
 - Las entregas previas v0.1.0 y v0.2.0 se integraron mediante PR/CI. Citas, Historias y las mejoras todavía requieren aceptación e integración.

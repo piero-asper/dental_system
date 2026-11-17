@@ -288,6 +288,12 @@ model Pago {
   observaciones String?
   createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  claveSolicitud String?    @unique @map("clave_solicitud") @db.Uuid
+  huellaSolicitud String?   @map("huella_solicitud")
+  authUserId    String?     @map("auth_user_id") @db.Uuid
+  anuladoAt     DateTime?   @map("anulado_at") @db.Timestamptz(6)
+  anuladoPor    String?     @map("anulado_por") @db.Uuid
+  motivoAnulacion String?   @map("motivo_anulacion")
 
   paciente     Paciente      @relation(fields: [pacienteId], references: [id])
   presupuesto  Presupuesto?  @relation(fields: [presupuestoId], references: [id])
@@ -295,6 +301,8 @@ model Pago {
   cajaMovimientos CajaMovimiento[]
 
   @@index([pacienteId])
+  @@index([presupuestoId, estado])
+  @@index([fechaPago])
   @@map("pagos")
 }
 
@@ -325,11 +333,19 @@ model CajaMovimiento {
   pagoId      String?             @map("pago_id") @db.Uuid
   descripcion String?
   createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  authUserId  String?             @map("auth_user_id") @db.Uuid
 
   pago      Pago?    @relation(fields: [pagoId], references: [id])
 
   @@index([createdAt])
+  @@unique([pagoId, tipo])
   @@map("caja_movimientos")
+}
+
+model SecuenciaComprobante {
+  serie        String @id
+  ultimoNumero Int @default(0) @map("ultimo_numero")
+  @@map("secuencias_comprobantes")
 }
 
 model Insumo {

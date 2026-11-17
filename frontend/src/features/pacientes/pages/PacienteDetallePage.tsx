@@ -27,7 +27,8 @@ export function PacienteDetallePage() {
         <section><h2>Registro</h2><dl className="details-grid"><div><dt>Fecha de registro</dt><dd><time dateTime={paciente.createdAt}>{formatDate(paciente.createdAt)}</time></dd></div></dl></section>
       </div>
       <PacienteResumen id={paciente.id}/>
-      <div className="form-actions"><Link className="secondary-button" to={`/historias-clinicas?pacienteId=${paciente.id}`}>Historia clínica</Link><Link className="secondary-button" to="/citas">Consultar agenda</Link></div>
+      <div className="form-actions"><Link className="secondary-button" to={`/historias-clinicas?pacienteId=${paciente.id}`}>Historia clínica</Link><Link className="secondary-button" to={`/citas?pacienteId=${paciente.id}`}>Consultar agenda</Link>
+        <Link className="secondary-button" to={`/tratamientos?tab=presupuestos&pacienteId=${paciente.id}`}>Presupuestos del paciente</Link><Link className="secondary-button" to={`/pagos?pacienteId=${paciente.id}`}>Pagos y saldos</Link></div>
     </>}
   </section>;
 }

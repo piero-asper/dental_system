@@ -12,6 +12,9 @@ import { CitasModule } from './modulos/citas/citas.module';
 import { HistoriasClinicasModule } from './modulos/historias-clinicas/historias-clinicas.module';
 import { AgendaModule } from './modulos/agenda/agenda.module';
 import { BiModule } from './modulos/bi/bi.module';
+import { TratamientosModule } from './modulos/tratamientos/tratamientos.module';
+import { InventarioModule } from './modulos/inventario/inventario.module';
+import { PagosModule } from './modulos/pagos/pagos.module';
 
 @Module({
   imports: [
@@ -24,7 +27,7 @@ import { BiModule } from './modulos/bi/bi.module';
     PacientesModule,
     CitasModule,
     HistoriasClinicasModule
-    ,AgendaModule,BiModule
+    ,AgendaModule,BiModule,TratamientosModule,InventarioModule,PagosModule
   ],
   controllers: [AppController, AutenticacionController],
   providers: [

@@ -5,6 +5,9 @@ import type { LucideIcon } from 'lucide-react';
 import { PacientesPage } from '@/features/pacientes/pages/PacientesPage';
 import { CitasPage } from '@/features/citas/pages/CitasPage';
 import { HistoriasClinicasPage } from '@/features/historias-clinicas/pages/HistoriasClinicasPage';
+import { TratamientosPage } from '@/features/tratamientos/pages/TratamientosPage';
+import { InventarioPage } from '@/features/inventario/pages/InventarioPage';
+import { PagosPage } from '@/features/pagos/pages/PagosPage';
 import { ModulePlaceholder } from '@/shared/components/ModulePlaceholder';
 import { PanelPage,ReportesPage } from '@/features/bi/pages/BiPage';
 
@@ -15,6 +18,7 @@ export type ModuleDefinition = {
   label?: string;
   icon: LucideIcon;
   Page?: ComponentType;
+  section?: string;
 };
 
 // Todo modulo nuevo comienza en construccion. Agregar Page cuando este implementado.
@@ -23,10 +27,10 @@ export const modules: readonly ModuleDefinition[] = [
   { path: 'pacientes', title: 'Pacientes', description: 'Permitirá registrar, buscar y consultar las fichas de los pacientes.', icon: UserRound, Page: PacientesPage },
   { path: 'citas', title: 'Citas', description: 'Permitirá reservar, reprogramar y consultar las citas de la clínica.', icon: CalendarDays, Page: CitasPage },
   { path: 'historias-clinicas', title: 'Historias clínicas', label: 'Historias', description: 'Permitirá consultar antecedentes, evoluciones y odontogramas por paciente.', icon: ClipboardList, Page: HistoriasClinicasPage },
-  { path: 'tratamientos', title: 'Tratamientos', description: 'Permitirá gestionar el catálogo de tratamientos, sus precios y los presupuestos de cada paciente.', icon: Stethoscope },
-  { path: 'pagos', title: 'Pagos', description: 'Permitirá registrar cobros, consultar la caja diaria, emitir comprobantes y dar seguimiento a las deudas de los pacientes.', icon: WalletCards },
-  { path: 'inventario', title: 'Inventario', description: 'Permitirá registrar insumos, controlar existencias y movimientos, y consultar alertas de stock bajo.', icon: Package },
-  { path: 'reportes', title: 'Reportes', description: 'Indicadores, comparaciones y exportación de datos operativos.', icon: FileBarChart,Page:ReportesPage }
+  { path: 'tratamientos', title: 'Tratamientos', description: 'Catálogo, precios y presupuestos por paciente.', icon: Stethoscope, Page: TratamientosPage },
+  { path: 'pagos', title: 'Pagos', description: 'Abonos, saldos, recibos internos y caja.', icon: WalletCards, Page: PagosPage },
+  { path: 'inventario', title: 'Inventario', description: 'Insumos, existencias e historial de movimientos.', icon: Package, Page: InventarioPage },
+  { path: 'reportes', title: 'Reportes', description: 'Indicadores y exportación de datos operativos y de caja.', icon: FileBarChart,Page:ReportesPage }
 ];
 
 export function createModuleRoutes(definitions: readonly ModuleDefinition[]): RouteObject[] {
@@ -37,5 +41,7 @@ export function createModuleRoutes(definitions: readonly ModuleDefinition[]): Ro
 }
 
 export function createModuleNavigation(definitions: readonly ModuleDefinition[]) {
-  return definitions.map(({ path, title, label, icon }) => ({ to: `/${path}`, label: label ?? title, icon }));
+  const secciones: Record<string, string> = { panel: 'Resumen', reportes: 'Resumen', pacientes: 'Pacientes y citas', citas: 'Pacientes y citas',
+    'historias-clinicas': 'Atención clínica', tratamientos: 'Atención clínica', pagos: 'Pagos', inventario: 'Inventario' };
+  return definitions.map(({ path, title, label, icon, section }) => ({ to: `/${path}`, label: label ?? title, icon, section: section ?? secciones[path] ?? 'Otros' }));
 }

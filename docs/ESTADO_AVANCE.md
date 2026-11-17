@@ -1,14 +1,26 @@
 # Avance guardado para continuar
 
-Fecha: 2026-10-24 (America/Bogota).
-Rama: `codex/s3-s4-citas-historias`.
-Estado: punto de pausa solicitado por el usuario. Avance en curso; apariencia, aceptación manual e integración pendientes.
+## Actualización del 5 de noviembre de 2026
 
-Trabajo actual: **FE-8, rediseño visual del panel**, a partir de la referencia dental elegida el 24 de octubre. Seguimiento separado en [backend](SPRINTS_BACKEND.md) y [frontend](SPRINTS_FRONTEND.md); [índice general](SPRINT.md).
+**Continuación: módulos y flujos completos.** Pagos ya tiene API e interfaz: abonos sobre presupuestos aceptados/finalizados, cartera, recibos internos REC, anulaciones versionadas y caja. Se añadieron cortes financieros para resumen/detalle/CSV, enlaces desde pacientes y presupuestos, menú agrupado por secciones y guía de uso dentro del sistema y en [GUIA_FLUJOS.md](GUIA_FLUJOS.md). La migración `20261106020000_pagos_caja` pasó la validación con rollback y se aplicó. `auth:check` verificó 18 tablas y la cuenta operativa. Las cinco suites PostgreSQL pasaron con rollback, incluida la conservación de la numeración de recibos. Se validaron 54 pruebas unitarias y 133 HTTP del backend. Frontend: 72 casos validados; dos casos de BI agotaron su tiempo en la ejecución conjunta y la suite completa de BI pasó al repetirse aislada. El usuario inició sesión con la contraseña nueva y se comprobó el panel. Se conservan pendientes la aceptación de los flujos con la clínica, el diseño definitivo y PR/CI.
+
+Verificación final en ejecución: ambas imágenes reconstruidas y contenedores saludables; API, PostgreSQL y autenticación `ok`. Rutas de Pagos/Cartera/Caja/Anulación publicadas y petición sin sesión rechazada con 401. Con la sesión real se verificaron el lateral por secciones, consulta de cartera, resumen y detalle de caja sin movimientos, descarga CSV y la guía de uso. La guía quedó abierta para el usuario. No se registraron cobros ni cambios clínicos reales durante esta comprobación.
+
+Nueva lista acordada: [herramientas, recuperación de acceso y módulos](LISTA_TRABAJO.md). Supabase fue reactivado por el usuario. Se implementaron Tratamientos/Presupuestos e Inventario en API e interfaz, además del flujo de recuperación de contraseña. La migración `20261106010000_tratamientos_inventario` se validó con rollback y se aplicó; restringe escrituras directas, valida importes y existencias y hace inmutables los movimientos de inventario. Continúan pendientes aceptación con la cuenta real, apariencia, Pagos e integración por PR/CI. El correo de recuperación encontró HTTP 429; se abrió una recuperación directa de un solo uso. El usuario indicó haber completado el cambio y se observó el retorno al login; no se leyeron ni introdujeron contraseñas. Falta comprobar el nuevo inicio de sesión.
+
+La sección siguiente conserva el punto de avance anterior como referencia histórica.
+
+Validación de los módulos nuevos: 49 pruebas unitarias del backend y 65 del frontend correctas. Las 91 pruebas HTTP anteriores pasaron y las 25 nuevas de Tratamientos/Inventario pasaron al corregir la respuesta simulada de autenticación del ensayo. PostgreSQL: prueba de repositorios con precios históricos, edición obsoleta, estados, stock, historial inmutable y permisos correcta, con rollback y comprobación de ausencia de residuos. `auth:check` confirmó una cuenta operativa y las políticas de las 17 tablas, con escrituras directas bloqueadas para los módulos nuevos. Las pruebas Jest requirieron ejecutarse fuera del aislamiento por un bloqueo de escritura de su caché en Windows.
+
+Fecha: 2026-10-26 (America/Bogota).
+Rama: `codex/s3-s4-citas-historias`.
+Estado: avance en curso; entorno local con Podman incorporado. Apariencia, aceptación manual e integración pendientes.
+
+Trabajo actual: **BE-9/FE-9, entorno local con Podman**, implementado y verificado el 26 de octubre. **FE-8, rediseño visual del panel**, conserva su aceptación pendiente a partir de la referencia dental elegida el 24 de octubre. Seguimiento separado en [backend](SPRINTS_BACKEND.md) y [frontend](SPRINTS_FRONTEND.md); [índice general](SPRINT.md).
 
 **Para retomar:** continuar la [apariencia del sistema](APARIENCIA_PENDIENTE.md). Los colores actuales no fueron aceptados. La última muestra utiliza `#0C4A6E`, `#2B6CB0`, `#1C3F72` y `#EBF8FF`, con tarjetas blancas; sigue pendiente de aprobación y no está aplicada al código. Guardar este avance en GitHub no cierra el diseño ni los sprints pendientes.
 
-**Orden acordado para la próxima sesión:** el usuario pidió comenzar mañana por el entorno local con Podman (BE-9/FE-9). Primero comprobar que la máquina de Podman y Compose estén disponibles; después preparar y verificar el arranque conjunto del frontend React y el backend NestJS, manteniendo PostgreSQL y autenticación en Supabase. La configuración de contenedores todavía no está implementada. La apariencia de FE-8 se retomará después y conserva su aceptación pendiente.
+**Podman (BE-9/FE-9):** máquina WSL2 `dental-system` creada e iniciada, Compose instalado y arranque conjunto del frontend React y el backend NestJS comprobado. PostgreSQL y autenticación permanecen en Supabase. Ver [instrucciones de arranque y diagnóstico](PODMAN.md). La apariencia de FE-8 se retomará después y conserva su aceptación pendiente.
 
 ## Alcance
 
@@ -78,6 +90,15 @@ Antes de guardar el punto de pausa en GitHub se repitieron las 42 pruebas unitar
 3. Continuar la apariencia del sistema según [el pendiente de FE-8](APARIENCIA_PENDIENTE.md), acordar la paleta y obtener aceptación visual.
 4. El avance se guarda como trabajo en curso en la rama `codex/s3-s4-citas-historias`, con PR en borrador hacia `develop`. Comprobar CI y realizar la integración hacia develop/main sólo tras la aceptación. No se ha hecho merge ni creado versión de entrega.
 
-El programa queda ejecutándose localmente: frontend `http://localhost:5173`, API `http://localhost:3000/api`. La página de acceso se abrió para la revisión del usuario. Si se cierran los procesos, seguir los comandos de arranque de la documentación.
+## Resultado de validación de Podman del 26 de octubre
+
+- Podman 6.1.4, máquina WSL2 `dental-system` en modo rootless y Docker Compose 5.6.1. El proveedor se descargó de la distribución oficial y se verificó su SHA256.
+- Añadidos `compose.yaml`, ambos `Containerfile` y exclusiones de construcción. Construcciones con `npm ci` y Node.js 22, Prisma generado dentro de Linux y backend compilado correctamente. Frontend compilado también dentro de su contenedor.
+- Los dos contenedores quedaron `healthy`, publicados sólo en `127.0.0.1:3000` y `127.0.0.1:5173`. Los procesos utilizan usuarios sin privilegios y se comprobó que no hay `.env` dentro de sus sistemas de archivos.
+- API, PostgreSQL y Supabase Auth respondieron `ok`; frontend HTTP 200, CORS para el origen local correcto y `/api/pacientes` sin autenticación devolvió HTTP 401.
+- Navegador: carga correcta de `/login`, con formulario de acceso. No se inició sesión ni se ejecutaron operaciones clínicas durante esta integración; la aceptación manual completa sigue pendiente.
+- La compilación frontend conserva el aviso de tamaño del paquete. La instalación de las dependencias existentes informó avisos de seguridad; su revisión sigue pendiente en BE-9. No se actualizaron dependencias como parte de esta integración.
+
+El programa queda ejecutándose en Podman: frontend `http://localhost:5173`, API `http://localhost:3000/api`. Para arrancar de nuevo, seguir la [guía de Podman](PODMAN.md). La configuración está preparada para uso local; no cierra la preparación de producción ni los criterios clínicos o visuales pendientes.
 
 Los archivos `.env`, dependencias, compilaciones y registros de ejecución se mantienen fuera de Git según `.gitignore`.

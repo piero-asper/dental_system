@@ -22,7 +22,7 @@ Objetivo: adaptar el panel a la referencia dental elegida el 24 de octubre: barr
 - [ ] Revisión y aceptación visual del usuario.
 - [ ] PR/CI e integración.
 
-No se copian nombres, cifras, ingresos, tratamientos, profesionales o gabinetes de la referencia. El sistema conserva una cuenta y una agenda. Tratamientos, Pagos e Inventario siguen mostrando su estado de construcción hasta que se implementen.
+No se copian nombres, cifras, ingresos, tratamientos, profesionales o gabinetes de la referencia. El sistema conserva una cuenta y una agenda. El 5 de noviembre se implementaron Tratamientos/Presupuestos, Inventario y Pagos, con accesos desde la ficha del paciente y reportes financieros. El lateral se agrupó por flujo; la revisión de diseño definitivo se deja para después por indicación del usuario.
 
 La revisión visual se realizó en una entrada temporal con datos de demostración, retirada después de comprobar escritorio, móvil y descarga CSV. La aplicación normal utiliza la API existente. Los filtros de próximas citas actúan sobre las cinco reservas devueltas por la API; el listado completo está en Agenda.
 
@@ -79,25 +79,28 @@ Las mejoras de ficha integral, seguimiento y protección de cambios son posterio
 - [x] FE-M3: lectura clínica, superficies, línea de tiempo, filtros y auditoría.
 - [ ] Aceptación completa del [plan de mejoras](PLAN_MEJORAS_BI.md) y cierre conjunto con backend.
 
-## FE-5 · Tratamientos — ⬜ pendiente
+## FE-5 · Tratamientos — 🟨 primera implementación del 5 de noviembre; aceptación pendiente
 
-- [ ] Catálogo y precios conectados a BE-5.
-- [ ] Presupuestos por paciente, ítems y estados.
-- [ ] Formularios, validaciones, carga/error/vacío y diseño adaptable.
-- [ ] Pruebas de flujo, revisión visual y aceptación.
+- [x] Catálogo y precios conectados a BE-5, búsqueda, paginación y activación/desactivación.
+- [x] Presupuestos por paciente, ítems, precio acordado, descuento, edición de borrador, detalle y estados.
+- [x] Formularios protegidos ante cambios sin guardar y estados de carga/error/vacío.
+- [ ] Aceptación con cuenta real y revisión final en escritorio/móvil; integración por PR/CI.
 
-## FE-6 · Pagos — ⬜ pendiente
+## FE-6 · Pagos — 🟨 implementado el 5 de noviembre; aceptación pendiente
 
-- [ ] Registro de cobros, caja diaria y deudas conectados a BE-6.
-- [ ] Consulta/emisión de comprobantes según la numeración acordada.
-- [ ] Formularios y presentación clara de importes/estados.
-- [ ] Pruebas, revisión visual y aceptación.
+- [x] Vistas Saldos pendientes, Cobros y recibos y Caja conectadas a BE-6.
+- [x] Abonos parciales, recibos internos REC imprimibles y anulación con motivo/confirmación.
+- [x] Totales, abonos vigentes y saldo por presupuesto; contexto de paciente/presupuesto conservado entre módulos.
+- [x] Resumen financiero en Panel/Reportes, detalle y CSV del mismo corte; formularios conservados ante errores y claves de reintento.
+- [x] Pruebas de flujos de cobro, recibos, anulación y reportes.
+- [ ] Aceptación con cuenta real y revisión visual final; integración por PR/CI.
 
-## FE-7 · Inventario — ⬜ pendiente
+## FE-7 · Inventario — 🟨 primera implementación del 5 de noviembre; aceptación pendiente
 
-- [ ] Insumos, existencias, movimientos y alertas conectados a BE-7.
-- [ ] Búsqueda, filtros y formularios.
-- [ ] Estados de carga/error/vacío, pruebas y aceptación visual.
+- [x] Insumos, existencias, entradas/salidas/ajustes y consulta paginada del historial conectados a BE-7.
+- [x] Búsqueda, estado, filtro de reposición y formularios con control de versión y conservación ante errores.
+- [x] Estados de carga/error/vacío y aviso de existencias bajas.
+- [ ] Aceptación con cuenta real y revisión final en escritorio/móvil; integración por PR/CI.
 
 ## FE-8 · Panel y reportes — 🟨 operativo; diseño actual en revisión
 
@@ -106,11 +109,11 @@ Las mejoras de ficha integral, seguimiento y protección de cambios son posterio
 - [x] Mostrar cero, ausencia de base y disponibilidad insuficiente correctamente.
 - [x] Rediseño visual implementado según el sprint actual descrito al inicio; aceptación del usuario pendiente.
 - [ ] Aceptación del panel, reportes y cifras junto con BE-8.
-- [ ] Visualización financiera cuando BE-5/BE-6 aporten esos datos.
+- [x] Resumen financiero conectado a BE-6, con su corte identificado y acceso a caja/detalle.
 
 ## FE-9 · QA y entrega — ⬜ pendiente
 
-- [ ] Evaluar e incorporar el frontend al entorno local de Podman/Compose junto con BE-9. Propuesta pendiente de implementación: arranque conjunto, conexión con la API y autenticación de Supabase, revisión en navegador y documentación. La apariencia de FE-8 sigue pendiente por separado.
+- [x] Frontend incorporado al entorno local de Podman/Compose junto con BE-9: Vite con variables al arrancar, usuario sin privilegios y espera de salud de la API. Compilación dentro del contenedor y carga de `/login` comprobadas el 26 de octubre; API y Supabase Auth disponibles. [Guía operativa](PODMAN.md). La aceptación con cuenta real y la apariencia de FE-8 siguen pendientes.
 - [ ] Recorrido completo con cuenta real, escritorio/móvil y teclado.
 - [ ] Revisión de accesibilidad, mensajes, contraste y navegación.
 - [ ] Rendimiento de carga medido y ajustes justificados.

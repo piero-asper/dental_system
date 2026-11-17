@@ -23,7 +23,12 @@ export function CitasPage() {
   useEffect(()=>{if(!opened.current&&params.get('citaId')&&list.data){const cita=list.data.find((c)=>c.id===params.get('citaId'));if(cita){opened.current=true;setDetalle(cita);}}},[list.data,params]);
   async function refresh(message: string) { setSaved(message); setForm(null); setAction(null);setDetalle(null); await Promise.all([client.invalidateQueries({ queryKey: ['citas'] }),client.invalidateQueries({queryKey:['disponibilidad']}),client.invalidateQueries({queryKey:['paciente-resumen-ficha']}),client.invalidateQueries({queryKey:['paciente-citas']}),client.invalidateQueries({queryKey:['bi']})]); }
   return <section className="patients-page clinical-page">
-    <header className="module-header page-header"><div><p className="eyebrow">Agenda de la clínica</p><h1>Citas</h1><p>Agenda única · Hora de Colombia (UTC−5)</p></div><div className="inline-actions"><button className="secondary-button" onClick={()=>{if(confirmDiscard())setConfig(!config);}}>Horario y bloqueos</button><button className="primary-button" onClick={() => {if(!confirmDiscard())return;setSlot('');setDetalle(null);setAction(null); setForm('nueva'); setSaved(''); }}>Reservar cita</button></div></header>
+    <header className="module-header page-header"><div><p className="eyebrow">Agenda de la clínica</p><h1>Citas</h1><p>Agenda única · Hora de Colombia (UTC−5)</p></div><div className="inline-actions"><button className="secondary-button" onClick={()=>{if(confirmDiscard())setConfig(!config);}}>{config ? 'Cerrar configuración' : 'Configurar agenda'}</button><button className="primary-button" onClick={() => {if(!confirmDiscard())return;setSlot('');setDetalle(null);setAction(null); setForm('nueva'); setSaved(''); }}>Reservar cita</button></div></header>
+    <section className="surface workflow-guide" aria-label="Cómo funciona la agenda">
+      <div><strong>1. Configura el horario</strong><p>Indica una vez las horas habituales de atención. Los espacios entre franjas se consideran descansos o cierre.</p></div>
+      <div><strong>2. Bloquea excepciones</strong><p>Usa bloqueos solo para cambios puntuales, como vacaciones o una reunión. No eliminan ni desplazan citas existentes.</p></div>
+      <div><strong>3. Reserva en una franja libre</strong><p>Elige paciente, duración y una franja disponible. Confirma, atiende, cancela o marca inasistencia según corresponda.</p></div>
+    </section>
     {config&&<AgendaConfiguracion/>}
     {saved && <p className="success-message" role="status">{saved}</p>}
     <div className="patient-search surface"><label>Fecha<input type="date" required value={date} onChange={(e) => { if (e.target.value) setDate(e.target.value); }} /></label>

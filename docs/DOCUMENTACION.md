@@ -833,6 +833,8 @@ Todas las rutas usan el prefijo `/api` y requieren autenticación. Los DTO y par
 
 ### Arranque y diagnóstico
 
+Para ejecutar frontend y backend juntos en contenedores, seguir la [guía de Podman y Compose](PODMAN.md). Conserva PostgreSQL y autenticación en Supabase y utiliza los mismos archivos `.env` locales.
+
 En terminales distintas, desde la raíz del repositorio:
 
 ```powershell

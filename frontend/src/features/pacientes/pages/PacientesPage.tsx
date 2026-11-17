@@ -11,7 +11,7 @@ export function PacientesPage() {
   const location = useLocation();
   const q = params.get('q') ?? '';
   const estado = ['activos', 'inactivos'].includes(params.get('estado') ?? '') ? params.get('estado')! : 'todos';
-  const orden = 'asc';
+  const orden = params.get('orden') === 'desc' ? 'desc' : 'asc';
   const seguimiento=params.get('seguimiento')??'todos',ultimaAntes=params.get('ultimaAntes')??'';
   const rawPage = Number(params.get('pagina') ?? '1');
   const pagina = Number.isInteger(rawPage) && rawPage > 0 && rawPage <= 1000000 ? rawPage : 1;
@@ -33,13 +33,18 @@ export function PacientesPage() {
     event.preventDefault();
     setParams({ q: draftQ.trim(), estado, orden });
   }
-  function reset() { setDraftQ(''); setParams({ q:'',estado:'todos',seguimiento:'todos',ultimaAntes:'',orden }); }
+  function reset() { setDraftQ(''); setParams({ q:'',estado:'todos',seguimiento:'todos',ultimaAntes:'',orden:'asc' }); }
 
   return <section className="patients-page">
     <header className="module-header page-header">
       <div><p className="eyebrow">Gestión de la clínica</p><h1>Pacientes</h1><p>Consulta las fichas y mantén actualizados sus datos.</p></div>
       <Link className="primary-button button-icon" to="/pacientes/nuevo" state={state}><Plus size={18} aria-hidden="true" />Nuevo paciente</Link>
     </header>
+    <section className="surface workflow-guide" aria-label="Cómo registrar un paciente">
+      <div><strong>1. Busca primero</strong><p>Consulta por nombre, apellido o teléfono para evitar crear una ficha duplicada.</p></div>
+      <div><strong>2. Registra la ficha</strong><p>Nombres y apellidos son obligatorios. Teléfono y demás datos se pueden completar después.</p></div>
+      <div><strong>3. Continúa la atención</strong><p>Desde la ficha podrás reservar una cita, abrir historia clínica, preparar un presupuesto o registrar un pago.</p></div>
+    </section>
     {location.state?.patientUpdated && <p className="success-message" role="status">Los cambios del paciente se guardaron correctamente.</p>}
     <form className="patient-search surface" onSubmit={search} role="search" aria-label="Buscar pacientes">
       <label className="search-field">Buscar paciente<span className="search-input"><Search size={18} aria-hidden="true" /><input type="search" name="q" maxLength={100}
@@ -49,7 +54,7 @@ export function PacientesPage() {
       </select></label>
       <label>Seguimiento<select value={seguimiento} onChange={(e)=>setParams({seguimiento:e.target.value})}><option value="todos">Todos</option><option value="sin_historia">Sin historia clínica</option><option value="sin_proxima">Sin próxima cita</option><option value="sin_atencion">Sin atenciones</option></select></label>
       <label>Última atención anterior a<input type="date" value={ultimaAntes} onChange={(e)=>setParams({ultimaAntes:e.target.value})}/></label>
-      <button className="secondary-button patient-sort-button" type="button" title="Ordenar de A a Z por apellidos" aria-label="Ordenar de A a Z por apellidos" onClick={() => setParams({ q: draftQ.trim(), estado, orden })}>
+      <button className="secondary-button patient-sort-button" type="button" title={orden === 'asc' ? 'Ordenar de Z a A por apellidos' : 'Ordenar de A a Z por apellidos'} aria-label={orden === 'asc' ? 'Ordenar de Z a A por apellidos' : 'Ordenar de A a Z por apellidos'} onClick={() => setParams({ q: draftQ.trim(), estado, orden: orden === 'asc' ? 'desc' : 'asc' })}>
         <ArrowDownNarrowWide size={22} aria-hidden="true" />
       </button>
       {(q || estado !== 'todos' || draftQ || seguimiento!=='todos' || ultimaAntes) && <button className="secondary-button" type="button" onClick={reset}>Limpiar</button>}

@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+vi.mock('@/shared/components/ReporteFinanciero', () => ({ ReporteFinanciero: () => null }));
 import { cleanup,fireEvent,render,screen,waitFor } from '@testing-library/react';
 import { afterEach,beforeEach,describe,expect,it,vi } from 'vitest';
 import { MemoryRouter, useLocation } from 'react-router-dom';

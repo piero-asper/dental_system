@@ -1,17 +1,20 @@
-import { LogOut, ShieldCheck } from 'lucide-react';
+import { ChevronRight, LogOut } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { confirmDiscard, UnsavedNavigation } from './UnsavedChanges';
 
-type NavigationItem = { to: string; label: string; icon: LucideIcon };
+type NavigationItem = { to: string; label: string; icon: LucideIcon; section?: string };
 
 export function AppShell({ navigation }: { navigation: readonly NavigationItem[] }) {
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
+  const location = useLocation();
   const isDashboard = useLocation().pathname === '/panel';
   const [closing, setClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const sections = [...new Set(navigation.map((item) => item.section ?? 'Gestión clínica'))];
+  const activeModule = [...navigation].sort((a, b) => b.to.length - a.to.length).find((item) => location.pathname === item.to || location.pathname.startsWith(`${item.to}/`));
 
   async function handleSignOut() {
     if(!confirmDiscard())return;
@@ -31,9 +34,10 @@ export function AppShell({ navigation }: { navigation: readonly NavigationItem[]
           <span>Sistema Dental</span>
         </div>
         <div className="sidebar-clinic"><strong>Consultorio dental</strong><span>Una cuenta · Una agenda</span></div>
-        <p className="sidebar-section-label">Gestión clínica</p>
-        <nav className="nav-list">
-          {navigation.map((item) => {
+        <nav aria-label="Módulos del sistema">
+          {sections.map((section) => <section className="sidebar-module-section" key={section} aria-label={section}>
+          <h2 className="sidebar-section-label">{section}</h2><div className="nav-list">
+          {navigation.filter((item) => (item.section ?? 'Gestión clínica') === section).map((item) => {
             const Icon = item.icon;
 
             return (
@@ -42,19 +46,16 @@ export function AppShell({ navigation }: { navigation: readonly NavigationItem[]
                 <span>{item.label}</span>
               </NavLink>
             );
-          })}
+          })}</div></section>)}
         </nav>
-        <div className="sidebar-session">
-          <div className="sidebar-access"><ShieldCheck size={18} aria-hidden="true"/><span>Acceso de la clínica<small>Sesión protegida</small></span></div>
-          <p className="session-email">{user?.email}</p>
-          <button className="secondary-button logout-button" disabled={closing} onClick={() => { void handleSignOut(); }}>
-            <LogOut aria-hidden="true" size={18} />{closing ? 'Cerrando…' : 'Cerrar sesión'}
-          </button>
-          {error && <p className="form-error" role="alert">{error}</p>}
-        </div>
       </aside>
 
       <main className="main-content">
+        <header className="app-topbar">
+          <nav aria-label="Ubicación"><span>Mi clínica</span><ChevronRight size={14} aria-hidden="true"/><strong>{activeModule?.label ?? 'Sistema Dental'}</strong></nav>
+          <div className="app-topbar-actions"><span className="app-account">Cuenta de la clínica</span><button className="secondary-button logout-button" disabled={closing} onClick={() => { void handleSignOut(); }}><LogOut aria-hidden="true" size={17}/>{closing ? 'Cerrando…' : 'Cerrar sesión'}</button></div>
+        </header>
+        {error && <p className="form-error topbar-error" role="alert">{error}</p>}
         <Outlet />
       </main>
     </div>

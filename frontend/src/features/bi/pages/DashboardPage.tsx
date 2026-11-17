@@ -1,8 +1,9 @@
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowUpRight, Bell, CalendarDays, ChevronRight, ClipboardCheck, Download, FileText, Plus, RefreshCw, Search, Users, X } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, CalendarDays, ChevronRight, ClipboardCheck, Download, FileText, Plus, RefreshCw, Users, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { RequestError } from '@/shared/components/RequestError';
+import { ReporteFinanciero } from '@/shared/components/ReporteFinanciero';
 import { addDays, clinicDate, formatDate, formatDateTime, formatTime } from '@/shared/lib/clinical';
 import { etiquetasEstado, type EstadoCita } from '@/features/citas/api/citasApi';
 import { ActivityChart, appointmentStates } from '../components/DashboardCharts';
@@ -15,15 +16,10 @@ const detailTitles: Record<string, string> = {
 
 export function DashboardPage() {
   const report = useBiReport(true), { data, query, seleccionar } = report;
-  const navigate = useNavigate(), [search, setSearch] = useState('');
+  const navigate = useNavigate();
   const isToday = report.desde === report.today && report.hasta === addDays(report.today, 1);
-  function searchPatient(e: FormEvent) { e.preventDefault(); if (search.trim()) navigate(`/pacientes?${new URLSearchParams({ q: search.trim() })}`); }
   const citas = data ? appointmentStates.reduce((sum, s) => sum + (data.indicadores[s.key] ?? 0), 0) : 0;
   return <section className="dental-dashboard">
-    <header className="dashboard-topbar"><nav aria-label="Ubicación"><span>Mi clínica</span><ChevronRight size={13} aria-hidden="true"/><strong>Panel principal</strong></nav><div className="dashboard-topbar-actions">
-      <form className="dashboard-search" role="search" onSubmit={searchPatient}><Search size={15} aria-hidden="true"/><label className="dashboard-sr-only" htmlFor="dashboard-patient-search">Buscar paciente</label><input id="dashboard-patient-search" type="search" placeholder="Buscar paciente por nombre o teléfono" maxLength={100} value={search} onChange={(e) => setSearch(e.target.value)}/><button type="submit" aria-label="Buscar paciente"><ArrowRight size={15} aria-hidden="true"/></button></form>
-      <button type="button" className="dashboard-icon-button dashboard-notification" disabled={!data} aria-label="Ver evoluciones pendientes" onClick={() => seleccionar('pendientes')}><Bell size={18} aria-hidden="true"/>{!!data?.indicadores.pendientes && <span/>}</button><div className="dashboard-account"><span className="dashboard-avatar" aria-hidden="true">SD</span><div><strong>Cuenta de la clínica</strong><small>Acceso autorizado</small></div></div>
-    </div></header>
     <div className="dashboard-workspace">
       <header className="dashboard-welcome"><div><p className="dashboard-datestamp"><CalendarDays size={13} aria-hidden="true"/>{formatDate(`${report.today}T12:00:00-05:00`)}<span>· Colombia, UTC−5</span></p><h1>Panel de la clínica</h1><p>Tu clínica, en un vistazo. Una atención más organizada comienza aquí.</p></div><div className="dashboard-welcome-actions"><Link className="dashboard-outline" to="/pacientes/nuevo"><Users size={14} aria-hidden="true"/>Nuevo paciente</Link><Link className="dashboard-primary" to="/citas?reservar=1"><Plus size={15} aria-hidden="true"/>Nueva cita</Link></div></header>
       <section className="dashboard-period" aria-label="Periodo de los indicadores"><form onSubmit={(e) => { e.preventDefault(); report.setParams({ desde: report.draftDesde, hasta: report.draftHasta }); }}><span className="dashboard-period-label">Consultar actividad</span><label>Desde<input type="date" required max={report.today} value={report.draftDesde} onChange={(e) => report.setDesde(e.target.value)}/></label><label>Hasta (sin incluir)<input type="date" required value={report.draftHasta} onChange={(e) => report.setHasta(e.target.value)}/></label><button className="dashboard-primary" type="submit">Consultar</button><div className="dashboard-period-shortcuts"><button type="button" className={isToday ? 'selected' : ''} onClick={() => report.setParams({ desde: report.today, hasta: addDays(report.today, 1) })}>Hoy</button><button type="button" className={!isToday && report.desde === report.today.slice(0, 7) + '-01' ? 'selected' : ''} onClick={() => report.setParams({ desde: report.today.slice(0, 7) + '-01', hasta: addDays(report.today, 1) })}>Este mes</button></div><button type="button" className="dashboard-refresh" disabled={query.isFetching} onClick={() => void query.refetch()}><RefreshCw size={14} className={query.isFetching ? 'is-spinning' : ''} aria-hidden="true"/>{query.isFetching ? 'Actualizando…' : 'Actualizar'}</button></form></section>
@@ -46,6 +42,7 @@ export function DashboardPage() {
           <section className="dashboard-card dashboard-pending"><div className="dashboard-card-heading"><h2>Necesitan tu atención</h2><Link to="/reportes">Ver todo <ArrowUpRight size={12} aria-hidden="true"/></Link></div>{[{ key: 'pendientes', title: 'Evoluciones por finalizar', hint: 'Completar el registro de la atención', icon: ClipboardCheck }, { key: 'sin_historia', title: 'Pacientes sin historia', hint: 'Abrir su historia clínica', icon: FileText }, { key: 'vencidas', title: 'Citas sin resolver', hint: 'Revisar su estado en la agenda', icon: CalendarDays }].map(({ key, title, hint, icon: Icon }) => <button type="button" key={key} onClick={() => seleccionar(key)}><span className={`dashboard-pending-icon ${key}`}><Icon size={16} aria-hidden="true"/></span><span><strong>{data.indicadores[key] ?? 0} {title.toLowerCase()}</strong><small>{hint}</small></span><ChevronRight size={13} aria-hidden="true"/></button>)}</section>
         </aside></div>
         <DashboardDetail report={report}/>
+        <ReporteFinanciero desde={report.desde} hasta={report.hasta} compacto />
         <footer className="dashboard-footer"><div><span className="dashboard-updated-dot"/> Actualizado: {formatDateTime(data.actualizado)}<p>{data.parcial ? 'Periodo en curso; comparación del tramo transcurrido.' : 'Periodo completo.'} Las cifras reflejan los estados registrados al consultar.</p></div><Link to="/reportes">Explorar reportes <ArrowRight size={14} aria-hidden="true"/></Link></footer>
       </>}
     </div>

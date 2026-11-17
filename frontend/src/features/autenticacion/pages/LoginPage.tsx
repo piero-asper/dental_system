@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/shared/auth/AuthProvider';
 import { SessionStatus } from '@/shared/auth/ProtectedRoute';
 
@@ -50,6 +50,7 @@ export function LoginPage() {
           {submitting ? 'Ingresando…' : 'Iniciar sesión'}
         </button>
       </form>
+      <p><Link className="text-link" to="/recuperar-acceso">Olvidé mi contraseña</Link></p>
       <p className="login-help">Acceso exclusivo para la cuenta autorizada de la clínica.</p>
     </section>
   </main>;

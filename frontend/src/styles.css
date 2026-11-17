@@ -80,6 +80,14 @@ a {
   padding: 32px;
 }
 
+.app-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 58px; margin: -32px -32px 28px; padding: 12px 32px; border-bottom: 1px solid #dce3e7; background: #fff; }
+.app-topbar nav, .app-topbar-actions { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.app-topbar nav { color: #657985; font-size: 12px; }
+.app-topbar nav strong { color: #1b3b4c; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-account { color: #496575; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.app-topbar .logout-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; width: auto; min-height: 34px; padding: 7px 11px; }
+.topbar-error { margin: -16px 0 16px; }
+
 .module-page {
   max-width: 960px;
 }
@@ -178,9 +186,32 @@ button:disabled { opacity: .65; cursor: wait; }
   .main-content {
     padding: 24px;
   }
+  .app-topbar { margin: -24px -24px 24px; padding: 12px 24px; }
+  .app-account { display: none; }
 }
 
 .patients-page { max-width: 1120px; margin: 0 auto; }
+.module-tabs { margin-top: 24px; }
+.budget-line { border-top: 1px solid #dce3e7 !important; padding-top: 18px !important; margin-top: 24px !important; }
+.preserve-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.stock-warning { color: #78551d; font-size: 13px; font-weight: 600; }
+.sidebar-module-section { margin-bottom: 18px; }
+.dental-shell .sidebar-module-section .sidebar-section-label { display: block; font-size: 11px; margin: 18px 12px 8px; }
+.workflow-steps li { margin-bottom: 12px; }
+.workflow-guide { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 18px; }
+.workflow-guide > div { border-left: 3px solid #0f766e; padding: 4px 0 4px 12px; }
+.workflow-guide strong { display: block; font-size: 14px; margin-bottom: 5px; }
+.workflow-guide p { margin: 0; color: #53616b; font-size: 13px; line-height: 1.55; }
+@media (max-width: 720px) { .workflow-guide { grid-template-columns: 1fr; } .app-topbar { align-items: flex-start; flex-wrap: wrap; } }
+.receipt-print { padding-bottom: 24px; }
+.receipt-print + .inline-actions { margin: 20px 0; }
+.financial-summary { min-width: 0; }
+@media print {
+  body:has(.receipt-print) * { visibility: hidden; }
+  body:has(.receipt-print) .receipt-print, body:has(.receipt-print) .receipt-print * { visibility: visible; }
+  body:has(.receipt-print) .receipt-print { position: absolute; inset: 0 auto auto 0; width: 100%; padding: 24px; background: white; }
+  .no-print, .sidebar { display: none !important; }
+}
 .page-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; }
 .button-icon { display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
 .surface { border: 1px solid #dce3e7; border-radius: 10px; background: #fff; margin-top: 24px; }

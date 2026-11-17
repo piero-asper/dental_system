@@ -145,7 +145,7 @@ describe('gestion de pacientes', () => {
     await screen.findByText('Torres Rojas, Lucia');
   });
 
-  it('ordena de A a Z desde la primera pagina y conserva los filtros al volver de la ficha', async () => {
+  it('alterna el orden por apellidos desde la primera página y conserva los filtros al volver de la ficha', async () => {
     mocks.apiClient.mockImplementation(async (path: string) => path.includes('/resumen') ? {ultima:null,proxima:null,tieneHistoria:false,totalCitas:0} : path.includes('/citas?') ? {items:[],total:0,totalPaginas:0} : path.includes('?')
       ? { items: [initial], total: 21, pagina: path.includes('pagina=2') ? 2 : 1, tamanoPagina: 20, totalPaginas: 2 }
       : initial);
@@ -153,9 +153,9 @@ describe('gestion de pacientes', () => {
     await screen.findByText('Página 1 de 2');
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
     await screen.findByText('Página 2 de 2');
-    fireEvent.click(screen.getByRole('button', { name: 'Ordenar de A a Z por apellidos' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ordenar de Z a A por apellidos' }));
     await screen.findByText('Página 1 de 2');
-    await waitFor(() => expect(mocks.apiClient).toHaveBeenCalledWith('/pacientes?q=Lucia&estado=activos&pagina=1&tamanoPagina=20&orden=asc', expect.anything()));
+    await waitFor(() => expect(mocks.apiClient).toHaveBeenCalledWith('/pacientes?q=Lucia&estado=activos&pagina=1&tamanoPagina=20&orden=desc', expect.anything()));
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
     await screen.findByText('Página 2 de 2');
     fireEvent.click(screen.getByRole('link', { name: 'Ver ficha de Lucia Torres Rojas' }));

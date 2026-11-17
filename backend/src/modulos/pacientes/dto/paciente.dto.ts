@@ -1,27 +1,25 @@
 import { PartialType, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsIn, IsInt, IsISO8601, IsNotEmpty, IsOptional, IsString, Matches, Max, MaxLength, Min, ValidateIf } from 'class-validator';
-
-const trim = ({ value }: { value: unknown }) => typeof value === 'string' ? value.trim() : value;
-const optionalText = ({ value }: { value: unknown }) => typeof value === 'string' ? value.trim() || null : value;
+import { nullableText, trimText } from '../../../common/dto/clinical-fields.dto';
 
 export class CrearPacienteDto {
   @ApiProperty({ example: 'Lucia', maxLength: 100 })
-  @Transform(trim)
+  @Transform(trimText)
   @IsString({ message: 'Los nombres deben ser texto.' })
   @IsNotEmpty({ message: 'Los nombres son obligatorios.' })
   @MaxLength(100, { message: 'Los nombres admiten hasta 100 caracteres.' })
   nombres!: string;
 
   @ApiProperty({ example: 'Torres Rojas', maxLength: 100 })
-  @Transform(trim)
+  @Transform(trimText)
   @IsString({ message: 'Los apellidos deben ser texto.' })
   @IsNotEmpty({ message: 'Los apellidos son obligatorios.' })
   @MaxLength(100, { message: 'Los apellidos admiten hasta 100 caracteres.' })
   apellidos!: string;
 
   @ApiPropertyOptional({ type: String, maxLength: 30, nullable: true })
-  @Transform(optionalText)
+  @Transform(nullableText)
   @IsOptional()
   @Matches(/^[+\d() .-]{5,30}$/, { message: 'El telefono debe tener entre 5 y 30 caracteres de numero telefonico.' })
   telefono?: string | null;
@@ -38,7 +36,7 @@ export class EditarPacienteDto extends PartialType(CrearPacienteDto, { skipNullP
 
 export class BuscarPacientesDto {
   @ApiPropertyOptional({ maxLength: 100, description: 'Nombres, apellidos o telefono. Ignora mayusculas.' })
-  @Transform(trim)
+  @Transform(trimText)
   @IsOptional()
   @IsString()
   @MaxLength(100)
