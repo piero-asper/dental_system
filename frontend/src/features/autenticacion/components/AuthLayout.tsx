@@ -17,8 +17,8 @@ export function AuthLayout({ eyebrow, title, description, children, footer }: Au
         <span className="auth-orbit auth-orbit-top" aria-hidden="true" />
         <span className="auth-orbit auth-orbit-bottom" aria-hidden="true" />
         <svg className="auth-dental-mark" viewBox="0 0 220 260" fill="none" aria-hidden="true">
-          <path d="M47 31C76 6 103 25 110 25s34-19 63 6c30 26 25 71 14 101-12 33-23 69-45 96-12 15-25 15-32-4l-10-37-10 37c-7 19-20 19-32 4-22-27-33-63-45-96C22 102 17 57 47 31Z" />
-          <path d="M72 66c12-10 24-13 38-13s26 3 38 13" />
+          <path d="M51 31c15-11 32-12 47-5 7 3 17 3 24 0 15-7 32-6 47 5 23 17 26 48 18 77-8 30-22 66-39 94-9 15-19 26-30 24-12-2-14-21-18-42-2-12-5-20-10-20s-8 8-10 20c-4 21-6 40-18 42-11 2-21-9-30-24-17-28-31-64-39-94-8-29-5-60 18-77 12-9 26-11 40-5Z" />
+          <path d="M69 70c12-9 26-13 41-13s29 4 41 13" />
         </svg>
         <BrandLogo inverse />
         <div className="auth-showcase-copy">

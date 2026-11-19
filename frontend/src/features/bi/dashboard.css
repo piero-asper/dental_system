@@ -1,34 +1,34 @@
-/* Clinical palette: petrol, balanced teal and cool whites. */
-.app-shell.dental-shell { grid-template-columns: 216px minmax(0, 1fr); background: #f3f6f9; }
-.dental-shell .sidebar { background: #122f3e; color: #d9e7ec; border: 0; padding: 28px 16px 20px; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+/* Operational interface aligned with the authentication palette. */
+.app-shell.dental-shell { grid-template-columns: 240px minmax(0, 1fr); background: #edf8f6; }
+.dental-shell .sidebar { background: linear-gradient(165deg, #023936 0%, #034b47 54%, #08786d 100%); color: #d5f0e8; border: 0; padding: 30px 18px 22px; display: flex; flex-direction: column; position: sticky; top: 0; height: 98.765dvh; overflow-y: auto; }
 .dental-shell .brand { color: #fff; font-size: 17px; letter-spacing: -.3px; gap: 9px; padding: 0 5px; margin-bottom: 26px; }
-.dental-shell .brand-mark { background: #157f82; width: 32px; height: 35px; border-radius: 8px; flex-shrink: 0; }
+.dental-shell .brand-mark { background: #0d9b89; width: 36px; height: 39px; border-radius: 10px; flex-shrink: 0; }
 .dental-shell .brand-mark svg { width: 27px; height: 27px; }
-.sidebar-clinic { border: 1px solid #36505f; border-radius: 7px; padding: 12px 10px; margin-bottom: 27px; display: grid; gap: 5px; }
-.sidebar-clinic strong { font-size: 12px; font-weight: 550; color: #e8f1f4; }
-.sidebar-clinic span { font-size: 10px; color: #a9c0cb; }
-.sidebar-section-label { color: #a9c0cb; font-size: 9px; text-transform: uppercase; letter-spacing: .8px; margin: 0 5px 13px; }
+.sidebar-clinic { border: 1px solid #c3fff131; border-radius: 10px; padding: 14px 12px; margin-bottom: 28px; display: grid; gap: 5px; }
+.sidebar-clinic strong { font-size: 14px; font-weight: 600; color: #f1fffc; }
+.sidebar-clinic span { font-size: 12px; color: #b6dfd6; }
+.sidebar-section-label { color: #afe7dc; font-size: 10px; text-transform: uppercase; letter-spacing: .8px; margin: 0 5px 14px; }
 .dental-shell .nav-list { display: grid; gap: 6px; }
-.dental-shell .nav-item { color: #b8ccd5; font-size: 12px; padding: 12px 11px; min-height: 42px; border-radius: 6px; gap: 12px; }
-.dental-shell .nav-item svg { opacity: .9; width: 16px; height: 16px; }
-.dental-shell .nav-item.active, .dental-shell .nav-item:hover { background: #254a5b; color: #fff; }
-.dental-shell .nav-item.active { box-shadow: inset 3px 0 #62aba9; }
+.dental-shell .nav-item { color: #d5f0e8; font-size: 14px; padding: 13px 12px; min-height: 48px; border-radius: 8px; gap: 12px; }
+.dental-shell .nav-item svg { opacity: .9; width: 18px; height: 18px; }
+.dental-shell .nav-item.active, .dental-shell .nav-item:hover { background: #ffffff1f; color: #fff; }
+.dental-shell .nav-item.active { box-shadow: inset 3px 0 #42d7b4; }
 .dental-shell .sidebar-session { margin-top: auto; padding: 24px 5px 0; border-top: 0; }
 .sidebar-access { display: flex; align-items: center; gap: 9px; font-size: 11px; color: #e2eef2; }
 .sidebar-access svg { color: #8cb8be; }
 .sidebar-access small { display: block; color: #a9c0cb; font-size: 10px; margin-top: 5px; }
 .dental-shell .session-email { color: #a9c0cb; font-size: 10px; line-height: 1.6; margin-top: 14px; }
-.dental-shell .logout-button { min-height: 36px; background: #203f50; border: 1px solid #365362; color: #e4eff2; font-size: 11px; justify-content: center; }
-.dental-shell .logout-button:hover { background: #2b5163; }
+.dental-shell .logout-button { min-height: 40px; background: #ffffff14; border: 1px solid #c3fff131; color: #f1fffc; font-size: 13px; justify-content: center; }
+.dental-shell .logout-button:hover { background: #ffffff24; }
 .dental-shell .sidebar .form-error { color: #f3bdb2; }
-.dashboard-shell .main-content { padding: 0; background: #f3f6f9; }
-.dental-shell .app-topbar { margin: 0; padding: 12px 28px; min-height: 58px; border-color: #e2eaf0; background: #fff; }
-.dental-shell .app-topbar nav { color: #5d7585; }
-.dental-shell .app-topbar nav strong { color: #1b3b4c; }
-.dental-shell .app-account { color: #345468; }
-.dental-shell .app-topbar .logout-button { background: #fff; border-color: #cbdce3; color: #245a67; font-size: 11px; }
-.dental-shell .app-topbar .logout-button:hover { background: #eef7f7; }
-.dental-dashboard { --dash-ink: #1b3b4c; --dash-muted: #5d7585; --dash-teal: #177f81; --dash-line: #e2eaf0; color: var(--dash-ink); font-size: 13px; }
+.dashboard-shell .main-content { padding: 0; background: #edf8f6; }
+.dental-shell .app-topbar { margin: 0; padding: 14px 32px; min-height: 68px; border-color: #d2e7e1; background: #fffffff2; }
+.dental-shell .app-topbar nav { color: #5f7c78; font-size: 14px; }
+.dental-shell .app-topbar nav strong { color: #123834; font-size: 15px; }
+.dental-shell .app-account { color: #285a55; }
+.dental-shell .app-topbar .logout-button { background: #fff; border-color: #b6dfd6; color: #08786d; font-size: 13px; }
+.dental-shell .app-topbar .logout-button:hover { background: #effaf7; }
+.dental-dashboard { --dash-ink: #123834; --dash-muted: #5f7c78; --dash-teal: #08786d; --dash-line: #d2e7e1; color: var(--dash-ink); font-size: 16px; }
 .dental-dashboard :is(button, input) { font: inherit; }
 .dental-dashboard button { cursor: pointer; }
 .dental-dashboard button:disabled { cursor: wait; }
@@ -188,6 +188,56 @@
 .dashboard-sr-only { position: absolute; top: 0; left: 0; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .is-spinning { animation: dashboard-spin 1.5s linear infinite; }
 @keyframes dashboard-spin { to { transform: rotate(360deg); } }
+
+@media (min-width: 821px) {
+  .dashboard-topbar { min-height: 76px; padding: 14px 32px; }
+  .dashboard-topbar > nav { font-size: 13px; }
+  .dashboard-search { width: 330px; min-height: 40px; border-radius: 8px; }
+  .dashboard-search input, .dashboard-account strong { font-size: 12px; }
+  .dashboard-account small { font-size: 11px; }
+  .dashboard-avatar { width: 40px; height: 40px; font-size: 12px; }
+  .dashboard-workspace { padding: 32px 34px 28px; }
+  .dashboard-welcome h1 { font-size: 33px; }
+  .dashboard-welcome p { font-size: 14px; }
+  .dashboard-welcome .dashboard-datestamp, .dashboard-period-label { font-size: 12px; }
+  .dashboard-primary, .dashboard-outline { min-height: 42px; padding: 10px 16px; font-size: 13px!important; }
+  .dashboard-period label, .dashboard-period input, .dashboard-period-shortcuts button, .dashboard-refresh { font-size: 12px!important; }
+  .dashboard-period input, .dashboard-period .dashboard-primary { min-height: 39px; }
+  .dental-dashboard h2 { font-size: 18px; }
+  .dashboard-card-heading { padding: 21px 22px 17px; }
+  .dashboard-caption, .dashboard-text-link, .dashboard-card-heading > a { font-size: 12px; }
+  .dashboard-stat-grid { gap: 18px; }
+  .dashboard-stat-card { padding: 21px 22px; }
+  .dashboard-stat-label { font-size: 13px; }
+  .dashboard-stat-value { font-size: 35px; }
+  .dashboard-stat-description, .dashboard-stat-note { font-size: 11px; }
+  .dashboard-columns, .dashboard-primary-column, .dashboard-secondary-column { gap: 24px; }
+  .dashboard-table { font-size: 12px; }
+  .dashboard-table th { font-size: 10px; padding: 13px 16px; }
+  .dashboard-table td { padding: 19px 16px; }
+  .dashboard-status, .dashboard-table-action, .dashboard-table-footer { font-size: 11px; }
+  .dashboard-empty { font-size: 14px; min-height: 210px; }
+  .dashboard-next-attention h2 { font-size: 16px; }
+  .dashboard-next-patient strong { font-size: 16px; }
+  .dashboard-next-patient div > span, .dashboard-next-summary span, .dashboard-next-actions a { font-size: 11px; }
+  .dashboard-next-summary strong { font-size: 13px; }
+  .dashboard-secondary-metrics > button > span { font-size: 13px; }
+  .dashboard-secondary-metrics strong { font-size: 24px; }
+  .dashboard-secondary-metrics small, .dashboard-footer { font-size: 11px; }
+}
+
+.dashboard-search { background: #f7fcfb; color: #5f7c78; }
+.dashboard-search:focus-within { border-color: #74cdbb; }
+.dashboard-icon-button { color: #08786d; }
+.dashboard-icon-button:hover { background: #d8f4ee; }
+.dashboard-avatar { background: #d8f4ee; color: #08786d; }
+.dashboard-next-attention { background: linear-gradient(145deg, #023936, #034b47); color: #f1fffc; }
+.dashboard-next-summary { background: #ffffff14; }
+.dashboard-next-actions a { border-color: #c3fff14d; color: #f1fffc; }
+.dashboard-next-actions a:first-child { background: #0d9b89; border-color: #0d9b89; }
+.dashboard-next-actions a:hover { background: #08786d; }
+.dashboard-pending-icon { color: #08786d; background: #d8f4ee; }
+.dashboard-detail { border-top-color: #0d9b89; }
 @media (min-width: 1500px) { .dashboard-workspace { padding: 30px 38px; }.dashboard-table { font-size: 12px; }.dashboard-table th { font-size: 9px; }.dashboard-table td { padding-top: 19px; padding-bottom: 19px; } }
 @media (max-width: 1200px) { .app-shell.dental-shell { grid-template-columns: 190px minmax(0, 1fr); }.dashboard-workspace { padding: 23px 20px; }.dashboard-topbar { padding: 12px 20px; }.dashboard-account > div { display: none; }.dashboard-account { padding-left: 14px; }.dashboard-topbar-actions { gap: 12px; }.dashboard-columns { grid-template-columns: minmax(0,1.7fr) minmax(245px,1fr); gap: 16px; }.dashboard-stat-card { padding: 15px 13px; }.dashboard-stat-label { font-size: 10px; }.dashboard-sparkbars { gap: 2px; }.dashboard-sparkbars i { width: 3px; } }
 @media (max-width: 1000px) { .dashboard-columns { grid-template-columns: minmax(0, 1fr); }.dashboard-secondary-column { grid-template-columns: repeat(2,minmax(0,1fr)); }.dashboard-secondary-column .dashboard-pending { grid-column: 1 / -1; }.dashboard-stat-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.dashboard-account { display: none; } }
