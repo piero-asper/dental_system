@@ -13,18 +13,16 @@ function CurrentLocation(){const location=useLocation();return <output data-test
 function start(panel=false){const client=new QueryClient({defaultOptions:{queries:{retry:false}}});render(<QueryClientProvider client={client}><MemoryRouter>{panel?<PanelPage/>:<ReportesPage/>}<CurrentLocation/></MemoryRouter></QueryClientProvider>);}
 beforeEach(()=>{mocks.apiClient.mockReset();mocks.apiClient.mockImplementation(async(path:string)=>path.startsWith('/bi/resumen')?snapshot():{items:[{id:'patient',pacienteId:'patient',paciente:'Torres, Lucia',fecha:'2026-10-18T15:00:00Z',estado:'Activo',tipo:'paciente'}],total:1,totalPaginas:1});});afterEach(cleanup);
 describe('BI operativo',()=>{
-  it('el panel conserva el corte de BI al abrir una tarjeta',async()=>{
+  it('el panel abre Reportes con el periodo consultado al abrir una tarjeta',async()=>{
     start(true);
     fireEvent.click(await screen.findByRole('button',{name:/Pacientes nuevos 1/}));
-    await screen.findByText('Torres, Lucia');
-    expect(mocks.apiClient).toHaveBeenCalledWith('/bi/detalle?corte=snapshot&metrica=nuevos&pagina=1');
+    await waitFor(()=>expect(screen.getByTestId('current-location').textContent).toMatch(/^\/reportes\?desde=.+&hasta=.+$/));
   });
-  it('permite abrir el detalle de un punto del gráfico con el teclado',async()=>{
+  it('envía a Reportes desde un punto del gráfico con el teclado',async()=>{
     start(true);
     const point=await screen.findByRole('button',{name:'2026-10-18: 1 nuevos pacientes'});
     fireEvent.keyDown(point,{key:'Enter'});
-    await screen.findByText('Torres, Lucia');
-    expect(mocks.apiClient).toHaveBeenCalledWith('/bi/detalle?corte=snapshot&metrica=nuevos_2026-10-18&pagina=1');
+    await waitFor(()=>expect(screen.getByTestId('current-location').textContent).toMatch(/^\/reportes\?desde=.+&hasta=.+$/));
   });
   it('filtra las próximas citas sin modificar los datos de la consulta',async()=>{
     mocks.apiClient.mockResolvedValue({...snapshot(),proximas:[
@@ -38,12 +36,6 @@ describe('BI operativo',()=>{
     expect(screen.getByText('Torres, Lucia')).toBeDefined();
     fireEvent.click(screen.getByRole('button',{name:'Todas las próximas',exact:true}));
     expect(screen.getByText('Rojas, Julio')).toBeDefined();
-  });
-  it('la búsqueda del panel abre pacientes con el texto introducido',async()=>{
-    start(true);
-    fireEvent.change(screen.getByRole('searchbox',{name:'Buscar paciente'}),{target:{value:'Lucía Pérez'}});
-    fireEvent.click(screen.getByRole('button',{name:'Buscar paciente',exact:true}));
-    await waitFor(()=>expect(screen.getByTestId('current-location').textContent).toBe('/pacientes?q=Luc%C3%ADa+P%C3%A9rez'));
   });
   it('abre el detalle de las inasistencias ya iniciadas desde la tasa',async()=>{
     start();

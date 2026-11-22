@@ -39,7 +39,7 @@ export function ActivityChart({ series, onSelect }: { series: Resumen['series'];
           })}
         </g>)}
       </svg></div>
-      <p className="dashboard-caption">{series.length === 1 ? 'Un día en el periodo. Amplía las fechas para comparar la actividad.' : 'Selecciona un punto para consultar los registros de ese día.'}</p>
+      <p className="dashboard-caption">{series.length === 1 ? 'Un día en el periodo. Amplía las fechas para comparar la actividad.' : 'Selecciona un punto para abrir el análisis del periodo.'}</p>
     </>}
   </div>;
 }

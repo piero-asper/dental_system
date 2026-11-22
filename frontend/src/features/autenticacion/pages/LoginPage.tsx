@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { Link, Navigate, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
 import { useAuth } from '@/shared/auth/AuthProvider';
 import { SessionStatus } from '@/shared/auth/ProtectedRoute';
@@ -8,6 +8,7 @@ import { AuthLayout } from '../components/AuthLayout';
 export function LoginPage() {
   const { session, user, loading, error, signIn } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -18,7 +19,6 @@ export function LoginPage() {
     !requestedPath.startsWith('//') && !requestedPath.startsWith('/login') ? requestedPath : '/panel';
 
   if (loading || (session && !user)) return <SessionStatus />;
-  if (user) return <Navigate to={destination} replace />;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -28,6 +28,7 @@ export function LoginPage() {
     try {
       await signIn(email, password);
       setPassword('');
+      navigate(destination, { replace: true });
     } catch (cause) {
       setFormError(cause instanceof Error ? cause.message : 'No se pudo iniciar sesión. Intenta nuevamente.');
     } finally {

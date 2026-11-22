@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/shared/lib/supabaseClient';
 import { prepararRecuperacion } from '../recovery';
+import { AuthLayout } from '../components/AuthLayout';
 
 export function RestablecerContrasenaPage() {
   const [ready, setReady] = useState(false), [error, setError] = useState('');
@@ -31,20 +32,20 @@ export function RestablecerContrasenaPage() {
     } catch { setError('No se pudo cambiar la contraseña. Revisa los requisitos de tu cuenta, comprueba la conexión o solicita un enlace nuevo.'); }
     finally { setSaving(false); }
   }
-  return <main className="login-page"><section className="login-panel">
-    <span className="brand-mark" aria-hidden="true">SD</span><h1>Establecer contraseña</h1>
+  return <AuthLayout eyebrow="Nueva contraseña" title="Establece tu contraseña" description="Elige una contraseña segura para volver a ingresar a la clínica."
+    footer={<p className="login-help">Al terminar, volverás al acceso para iniciar sesión.</p>}>
     {saved ? <><p className="success-message" role="status">Tu contraseña se actualizó. Ya puedes iniciar sesión.</p><Link className="text-link" to="/login">Ir al acceso</Link></> : <>
       {!ready && !error && <p role="status">Verificando el enlace…</p>}
       {ready && <form className="login-form" onSubmit={(event) => { void submit(event); }} aria-busy={saving}>
         <p>Elige una contraseña de al menos ocho caracteres.</p>
-        <label htmlFor="new-password">Contraseña nueva</label>
-        <input id="new-password" type="password" autoComplete="new-password" minLength={8} required value={password} onChange={(e) => setPassword(e.target.value)} disabled={saving} />
-        <label htmlFor="confirm-password">Confirmar contraseña</label>
-        <input id="confirm-password" type="password" autoComplete="new-password" minLength={8} required value={confirmation} onChange={(e) => setConfirmation(e.target.value)} disabled={saving} />
+        <label className="login-field" htmlFor="new-password"><span>Contraseña nueva</span>
+        <input className="login-plain-input" id="new-password" type="password" autoComplete="new-password" minLength={8} required value={password} onChange={(e) => setPassword(e.target.value)} disabled={saving} /></label>
+        <label className="login-field" htmlFor="confirm-password"><span>Confirmar contraseña</span>
+        <input className="login-plain-input" id="confirm-password" type="password" autoComplete="new-password" minLength={8} required value={confirmation} onChange={(e) => setConfirmation(e.target.value)} disabled={saving} /></label>
         <button className="primary-button" disabled={saving}>{saving ? 'Guardando…' : 'Guardar contraseña'}</button>
       </form>}
       {error && <p className="form-error" role="alert">{error}</p>}
       <p><Link className="text-link" to="/recuperar-acceso">Solicitar otro enlace</Link></p>
     </>}
-  </section></main>;
+  </AuthLayout>;
 }

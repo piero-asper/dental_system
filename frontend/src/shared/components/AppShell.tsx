@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { confirmDiscard, UnsavedNavigation } from './UnsavedChanges';
 import { BrandLogo } from './BrandLogo';
+import { SessionLoadingScreen } from './SessionLoadingScreen';
 
 type NavigationItem = { to: string; label: string; icon: LucideIcon; section?: string };
 
@@ -24,6 +25,13 @@ export function AppShell({ navigation }: { navigation: readonly NavigationItem[]
     try { await signOut(); }
     catch (cause) { setError(cause instanceof Error ? cause.message : 'No se pudo cerrar la sesión.'); }
     finally { setClosing(false); }
+  }
+
+  if (closing) {
+    return <SessionLoadingScreen
+      title="Cerrando tu sesión"
+      description="Estamos cerrando tu acceso de forma segura."
+    />;
   }
 
   return (

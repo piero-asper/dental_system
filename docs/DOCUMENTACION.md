@@ -783,7 +783,7 @@ Ejemplo:
 
 Cuando el modulo este implementado, importar su componente y agregar `Page: LaboratorioPage` a esa misma definicion. El contenido funcional reemplaza automaticamente el aviso. Las rutas secundarias, como formularios o detalles, se agregan en el router cuando sean necesarias.
 
-Panel, Tratamientos, Pagos, Inventario y Reportes muestran actualmente el aviso. Pacientes, Citas e Historias clinicas conservan sus paginas funcionales. Los nuevos modulos deben registrarse en este catalogo para obtener el comportamiento automatico.
+Todos los módulos actuales tienen páginas funcionales. El aviso queda reservado para un módulo futuro que se registre en el catálogo sin componente `Page`.
 
 ## Plan de mejoras y BI (2026-10-18)
 
@@ -795,7 +795,7 @@ El panel adopta una interfaz clínica con barra lateral azul petróleo, acentos 
 
 El seguimiento del proyecto se divide en [sprints de backend](SPRINTS_BACKEND.md) y [sprints de frontend](SPRINTS_FRONTEND.md), con un [índice general](SPRINT.md). Este rediseño pertenece a FE-8.
 
-**Apariencia en curso:** el usuario no ha aceptado los colores actuales. La última paleta explorada (`#0C4A6E`, `#2B6CB0`, `#1C3F72`, `#EBF8FF` y blanco) sólo se mostró en una muestra independiente y no está aplicada al sistema. Los ajustes y la aceptación visual siguen pendientes en [Apariencia pendiente](APARIENCIA_PENDIENTE.md); guardar el avance en GitHub no supone cerrar FE-8.
+**Apariencia en curso:** se aplicó una base visual común para navegación, formularios y panel. La aceptación clínica y visual final sigue pendiente; los ajustes posteriores deben actualizar [Apariencia pendiente](APARIENCIA_PENDIENTE.md) para que la documentación no contradiga al sistema.
 
 1. Iniciar sesión con la cuenta operativa. Buscar o registrar al paciente; nombres y apellidos son obligatorios, teléfono opcional. Las coincidencias por nombre o teléfono son avisos y permiten continuar si son personas distintas.
 2. En Citas → Horario y bloqueos, revisar y guardar el horario real. La propuesta inicial no se aplica automáticamente. Los cambios posteriores comienzan desde mañana y se rechazan si afectan citas pendientes; resolver esas citas explícitamente antes de cambiar la disponibilidad.

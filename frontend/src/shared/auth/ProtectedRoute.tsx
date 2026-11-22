@@ -1,13 +1,15 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from './AuthProvider';
+import { SessionLoadingScreen } from '../components/SessionLoadingScreen';
 
 export function SessionStatus() {
   const { loading, error, retry, signOut } = useAuth();
   const [signOutError, setSignOutError] = useState<string | null>(null);
+  if (loading) return <SessionLoadingScreen />;
   return <main className="login-page">
     <section className="login-panel" aria-label="Estado de sesión">
-      {loading ? <p role="status">Verificando tu sesión…</p> : <>
+      <>
         <h1>Revisa tu conexión</h1>
         <p role="alert">{signOutError ?? error}</p>
         <div className="session-actions">
@@ -16,7 +18,7 @@ export function SessionStatus() {
             void signOut().catch((cause: Error) => setSignOutError(cause.message));
           }}>Cerrar sesión</button>
         </div>
-      </>}
+      </>
     </section>
   </main>;
 }

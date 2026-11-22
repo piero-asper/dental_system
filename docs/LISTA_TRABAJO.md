@@ -36,7 +36,7 @@ Si la máquina ya está iniciada, se omite la primera línea. Para detener el pr
 5. `GET http://localhost:3000/api/health/dependencias` comprueba además base de datos y autenticación.
 6. Las rutas privadas, por ejemplo `/api/pacientes`, necesitan un token de sesión del usuario. Sin él deben devolver `401`.
 
-Postman puede ser útil para diagnosticar rutas sin usar las pantallas. Swagger ya ofrece otra forma de explorar la API en `http://localhost:3000/api/docs`.
+Postman puede ser útil para diagnosticar rutas sin usar las pantallas. Swagger ya ofrece otra forma de explorar la API en `http://localhost:3000/api/docs`. La guía de uso seguro, entorno local, importación desde OpenAPI y pruebas repetibles está en [POSTMAN.md](POSTMAN.md).
 
 Referencias: [Compose en Podman](https://docs.podman.io/en/latest/markdown/podman-compose.1.html), [recuperación de contraseña de Supabase](https://supabase.com/docs/reference/javascript/auth-resetpasswordforemail).
 

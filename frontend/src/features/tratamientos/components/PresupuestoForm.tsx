@@ -32,7 +32,7 @@ export function PresupuestoForm({ presupuesto, pacienteInicial = '', onSave, onC
     if (total === null) { setError('Revisa precios, cantidades y descuento. El descuento no debe superar el subtotal.'); return; }
     setSaving(true); setError('');
     try {
-      await onSave({ pacienteId, items: items.map(({ key: _key, nombre: _nombre, ...item }) => item), descuento, observaciones: observaciones.trim() || null,
+      await onSave({ pacienteId, items: items.map((item) => ({ tratamientoId: item.tratamientoId, cantidad: item.cantidad, precioUnitario: item.precioUnitario, pieza: item.pieza, observaciones: item.observaciones })), descuento, observaciones: observaciones.trim() || null,
         ...(presupuesto ? { version: presupuesto.updatedAt } : {}) });
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'No se pudo guardar el presupuesto.'); }
     finally { setSaving(false); }

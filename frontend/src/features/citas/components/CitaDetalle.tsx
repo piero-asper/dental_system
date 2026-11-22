@@ -5,7 +5,7 @@ import { apiClient } from '@/shared/lib/apiClient';
 import { formatDateTime,errorMessage } from '@/shared/lib/clinical';
 import { RequestError } from '@/shared/components/RequestError';
 import { UnsavedChanges,confirmDiscard } from '@/shared/components/UnsavedChanges';
-import { Cita,citasApi,etiquetasEstado } from '../api/citasApi';
+import { Cita,etiquetasEstado } from '../api/citasApi';
 type Evento={id:string;accion:string;createdAt:string;authUserId:string|null;valorAnterior:Record<string,unknown>|null;valorNuevo:Record<string,unknown>};
 export function CitaDetalle({cita,onClose,onHorario,onEstado}:{cita:Cita;onClose:()=>void;onHorario:(c:Cita)=>void;onEstado:(c:Cita)=>void}){
   const client=useQueryClient(),[motivo,setMotivo]=useState(cita.motivo??''),[notas,setNotas]=useState(cita.notas??'');
