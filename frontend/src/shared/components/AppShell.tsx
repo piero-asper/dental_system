@@ -39,7 +39,6 @@ export function AppShell({ navigation }: { navigation: readonly NavigationItem[]
       <UnsavedNavigation />
       <aside className="sidebar" aria-label="Navegacion principal">
         <div className="brand"><BrandLogo inverse /></div>
-        <div className="sidebar-clinic"><strong>Consultorio dental</strong><span>Una cuenta · Una agenda</span></div>
         <nav aria-label="Módulos del sistema">
           {sections.map((section) => <section className="sidebar-module-section" key={section} aria-label={section}>
           <h2 className="sidebar-section-label">{section}</h2><div className="nav-list">

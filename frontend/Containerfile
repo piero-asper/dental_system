@@ -1,4 +1,4 @@
-FROM docker.io/library/node:22-bookworm-slim
+FROM docker.io/library/node:22-bookworm-slim AS build
 WORKDIR /app
 RUN chown node:node /app
 USER node
@@ -6,5 +6,13 @@ COPY --chown=node:node package.json package-lock.json ./
 RUN npm ci
 COPY --chown=node:node index.html tsconfig.json tsconfig.node.json vite.config.ts ./
 COPY --chown=node:node src ./src
-EXPOSE 5173
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--strictPort"]
+COPY --chown=node:node public ./public
+RUN npm run build
+
+FROM docker.io/library/nginx:1.27-alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY runtime-config.template.js /opt/runtime-config.template.js
+COPY docker-entrypoint-runtime-config.sh /docker-entrypoint.d/40-runtime-config.sh
+COPY --from=build /app/dist /usr/share/nginx/html
+RUN chmod +x /docker-entrypoint.d/40-runtime-config.sh
+EXPOSE 80

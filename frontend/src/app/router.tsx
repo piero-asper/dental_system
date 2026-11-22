@@ -6,11 +6,9 @@ import { PacienteFormPage } from '@/features/pacientes/pages/PacienteFormPage';
 import { PacienteDetallePage } from '@/features/pacientes/pages/PacienteDetallePage';
 import { AppShell } from '@/shared/components/AppShell';
 import { ProtectedRoute } from '@/shared/auth/ProtectedRoute';
-import { SessionLoadingScreen } from '@/shared/components/SessionLoadingScreen';
 import { createModuleNavigation, createModuleRoutes, modules } from './modules';
 
 export const router = createBrowserRouter([
-  { path: '/vista-carga', element: <SessionLoadingScreen /> },
   { path: '/recuperar-acceso', element: <RecuperarAccesoPage /> },
   { path: '/restablecer-contrasena', element: <RestablecerContrasenaPage /> },
   {

@@ -529,19 +529,6 @@ body {
 
 .brand { margin: 0 8px 22px; }
 
-.sidebar-clinic {
-  display: grid;
-  gap: 4px;
-  margin: 0 4px 18px;
-  padding: 14px;
-  border: 1px solid #ffffff1c;
-  border-radius: 14px;
-  background: #ffffff0b;
-  color: #ecfffc;
-}
-
-.sidebar-clinic strong { font-size: 13px; }
-.sidebar-clinic span { color: #b6dfd6; font-size: 11px; }
 .dental-shell .sidebar-module-section .sidebar-section-label { margin: 20px 12px 8px; color: #afe7dc; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .nav-list { gap: 4px; }
 
@@ -738,7 +725,7 @@ body {
   html:has(.app-shell), body:has(.app-shell), #root:has(.app-shell) { height: auto; overflow: visible; }
   .sidebar { height: auto; min-height: 0; padding: 16px; }
   .sidebar nav { width: 100%; overflow-x: auto; }
-  .sidebar-clinic, .dental-shell .sidebar-module-section .sidebar-section-label { display: none; }
+  .dental-shell .sidebar-module-section .sidebar-section-label { display: none; }
   .sidebar-module-section { display: inline-block; margin: 0 6px 0 0; }
   .nav-list { display: flex; width: max-content; gap: 6px; }
   .nav-item { min-height: 40px; padding: 9px 12px; white-space: nowrap; }

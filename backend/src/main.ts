@@ -11,9 +11,10 @@ async function bootstrap(): Promise<void> {
 
   app.setGlobalPrefix('api');
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',') ?? true,
+    origin: process.env.CORS_ORIGIN?.split(',') ?? process.env.NODE_ENV !== 'production',
     credentials: true
   });
+  app.enableShutdownHooks();
   app.use(helmet());
   app.use(compression());
   app.useGlobalPipes(

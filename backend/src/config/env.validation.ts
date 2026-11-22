@@ -4,7 +4,8 @@ const requiredVariables = [
   'DATABASE_URL',
   'DIRECT_URL',
   'SUPABASE_URL',
-  'SUPABASE_SERVICE_ROLE_KEY'
+  'SUPABASE_SERVICE_ROLE_KEY',
+  'CORS_ORIGIN'
 ] as const;
 
 export function validateEnv(config: Env): Env {

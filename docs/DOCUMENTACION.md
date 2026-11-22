@@ -14,7 +14,7 @@ Sistema web profesional para la gestión integral de una clínica dental. Permit
 - Documentacion API: Swagger.
 - Pruebas: Jest.
 - CI: GitHub Actions.
-- Contenedores: no se usara Docker.
+- Contenedores: Compose/Podman para ejecución local y despliegue; PostgreSQL y autenticación continúan en Supabase.
 
 ## Usuarios
 Sistema de usuario único (sin roles). El registro público y el acceso anonimo estan desactivados en Supabase. Existe una cuenta operativa con correo confirmado, creada manualmente y verificada durante Sprint 1. Tiene acceso total al sistema. El usuario confirmo la prueba real de acceso, persistencia al recargar y cierre de sesion.
@@ -833,7 +833,7 @@ Todas las rutas usan el prefijo `/api` y requieren autenticación. Los DTO y par
 
 ### Arranque y diagnóstico
 
-Para ejecutar frontend y backend juntos en contenedores, seguir la [guía de Podman y Compose](PODMAN.md). Conserva PostgreSQL y autenticación en Supabase y utiliza los mismos archivos `.env` locales.
+Para ejecutar frontend y backend juntos en contenedores, seguir la [guía de Podman y Compose](PODMAN.md). Conserva PostgreSQL y autenticación en Supabase y utiliza los mismos archivos `.env` locales. Para publicar una versión, aplicar migraciones y mantener copias de seguridad, seguir [OPERACION_PRODUCCION.md](OPERACION_PRODUCCION.md).
 
 En terminales distintas, desde la raíz del repositorio:
 
