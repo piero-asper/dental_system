@@ -10,8 +10,6 @@
 .dashboard-welcome { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; margin-bottom: 22px; }
 .dashboard-welcome h1 { font-size: 27px; letter-spacing: -.6px; line-height: 1.3; margin: 8px 0 6px; font-weight: 650; }
 .dashboard-welcome p { color: var(--dash-muted); font-size: 12px; line-height: 1.6; }
-.dashboard-welcome .dashboard-datestamp { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; font-size: 10px; }
-.dashboard-datestamp span { color: #177f81; }
 .dashboard-welcome-actions { display: flex; gap: 10px; }
 .dashboard-primary, .dashboard-outline { display: inline-flex; justify-content: center; align-items: center; gap: 7px; min-height: 36px; border: 1px solid var(--dash-teal); background: var(--dash-teal); color: #fff; border-radius: 6px; padding: 9px 13px; font-size: 11px!important; font-weight: 550!important; text-decoration: none; white-space: nowrap; }
 .dashboard-primary:hover { background: #116a6e; }
@@ -126,9 +124,6 @@
 .dashboard-secondary-metrics small { color: #5d7585; font-size: 9px; line-height: 1.6; display: block; }
 .dashboard-secondary-metrics svg { position: absolute; top: 16px; right: 16px; color: #4b8a92; }
 .dashboard-secondary-metrics > button:hover { border-color: #93b8bd; }
-.dashboard-footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; color: #5d7585; font-size: 9px; padding: 23px 0 0; line-height: 1.8; }
-.dashboard-footer p { margin-top: 3px; }
-.dashboard-footer > :is(a, button) { display: inline-flex; align-items: center; gap: 6px; color: #17747b; font-weight: 500; }
 .dashboard-updated-dot { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: #5b9a8c; vertical-align: middle; margin-right: 5px; }
 .dashboard-loading { padding: 45px 20px; display: flex; align-items: center; justify-content: center; gap: 12px; color: #61818e; margin-top: 18px; }
 .dashboard-error { background: white; padding: 14px 18px; border: 1px solid #e1d1ca; border-radius: 8px; margin: 12px 0; }
@@ -141,7 +136,7 @@
   .dashboard-workspace { padding: 32px 34px 28px; }
   .dashboard-welcome h1 { font-size: 33px; }
   .dashboard-welcome p { font-size: 14px; }
-  .dashboard-welcome .dashboard-datestamp, .dashboard-period-label { font-size: 12px; }
+  .dashboard-period-label { font-size: 12px; }
   .dashboard-primary, .dashboard-outline { min-height: 42px; padding: 10px 16px; font-size: 13px!important; }
   .dashboard-period label, .dashboard-period input, .dashboard-period-shortcuts button, .dashboard-refresh { font-size: 12px!important; }
   .dashboard-period input, .dashboard-period .dashboard-primary { min-height: 39px; }
@@ -165,7 +160,7 @@
   .dashboard-next-summary strong { font-size: 13px; }
   .dashboard-secondary-metrics > button > span { font-size: 13px; }
   .dashboard-secondary-metrics strong { font-size: 24px; }
-  .dashboard-secondary-metrics small, .dashboard-footer { font-size: 11px; }
+  .dashboard-secondary-metrics small { font-size: 11px; }
 }
 
 .dashboard-avatar { background: #d8f4ee; color: #08786d; }
@@ -179,5 +174,5 @@
 @media (max-width: 1200px) { .dashboard-workspace { padding: 23px 20px; }.dashboard-columns { grid-template-columns: minmax(0,1.7fr) minmax(245px,1fr); gap: 16px; }.dashboard-stat-card { padding: 15px 13px; }.dashboard-stat-label { font-size: 10px; }.dashboard-sparkbars { gap: 2px; }.dashboard-sparkbars i { width: 3px; } }
 @media (max-width: 1000px) { .dashboard-columns { grid-template-columns: minmax(0, 1fr); }.dashboard-secondary-column { grid-template-columns: repeat(2,minmax(0,1fr)); }.dashboard-secondary-column .dashboard-pending { grid-column: 1 / -1; }.dashboard-stat-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media (max-width: 820px) { .dashboard-secondary-column { grid-template-columns: repeat(2,minmax(0,1fr)); } }
-@media (max-width: 580px) { .dashboard-workspace { padding: 21px 16px; }.dashboard-welcome { gap: 15px; margin-bottom: 18px; }.dashboard-welcome h1 { font-size: 25px; }.dashboard-welcome-actions { width: 100%; }.dashboard-welcome-actions > a { flex: 1; }.dashboard-period form { gap: 9px; align-items: flex-end; }.dashboard-period-label { width: 100%; margin: 0 0 3px; }.dashboard-period label { flex-direction: column; align-items: flex-start; flex: 1 1 120px; gap: 4px; }.dashboard-period input { width: 100%; min-height: 36px; }.dashboard-period .dashboard-primary { min-height: 36px; }.dashboard-refresh { margin-left: 0; }.dashboard-stat-grid { gap: 10px; }.dashboard-stat-card { padding: 14px 12px; }.dashboard-stat-value { font-size: 27px; }.dashboard-stat-label { align-items: flex-start; min-height: 25px; line-height: 1.5; }.dashboard-stat-description, .dashboard-stat-note { font-size: 9px; }.dashboard-sparkbars { display: none; }.dashboard-secondary-column { grid-template-columns: minmax(0,1fr); }.dashboard-columns, .dashboard-primary-column, .dashboard-secondary-column { gap: 16px; }.dashboard-card-heading { padding: 16px 15px 13px; }.dashboard-secondary-metrics { grid-template-columns: 1fr; gap: 12px; }.dashboard-appointment-filters { margin-left: 15px; margin-right: 15px; }.dashboard-appointment-filters button { font-size: 9px; padding: 7px 8px; }.dashboard-table { min-width: 510px; font-size: 11px; }.dashboard-table th { font-size: 9px; }.dashboard-table-action, .dashboard-status { font-size: 10px; }.dashboard-line-chart { min-width: 480px; }.dashboard-footer { font-size: 10px; } }
+@media (max-width: 580px) { .dashboard-workspace { padding: 21px 16px; }.dashboard-welcome { gap: 15px; margin-bottom: 18px; }.dashboard-welcome h1 { font-size: 25px; }.dashboard-welcome-actions { width: 100%; }.dashboard-welcome-actions > a { flex: 1; }.dashboard-period form { gap: 9px; align-items: flex-end; }.dashboard-period-label { width: 100%; margin: 0 0 3px; }.dashboard-period label { flex-direction: column; align-items: flex-start; flex: 1 1 120px; gap: 4px; }.dashboard-period input { width: 100%; min-height: 36px; }.dashboard-period .dashboard-primary { min-height: 36px; }.dashboard-refresh { margin-left: 0; }.dashboard-stat-grid { gap: 10px; }.dashboard-stat-card { padding: 14px 12px; }.dashboard-stat-value { font-size: 27px; }.dashboard-stat-label { align-items: flex-start; min-height: 25px; line-height: 1.5; }.dashboard-stat-description, .dashboard-stat-note { font-size: 9px; }.dashboard-sparkbars { display: none; }.dashboard-secondary-column { grid-template-columns: minmax(0,1fr); }.dashboard-columns, .dashboard-primary-column, .dashboard-secondary-column { gap: 16px; }.dashboard-card-heading { padding: 16px 15px 13px; }.dashboard-secondary-metrics { grid-template-columns: 1fr; gap: 12px; }.dashboard-appointment-filters { margin-left: 15px; margin-right: 15px; }.dashboard-appointment-filters button { font-size: 9px; padding: 7px 8px; }.dashboard-table { min-width: 510px; font-size: 11px; }.dashboard-table th { font-size: 9px; }.dashboard-table-action, .dashboard-status { font-size: 10px; }.dashboard-line-chart { min-width: 480px; } }
 @media (prefers-reduced-motion: reduce) { .dental-dashboard .is-spinning { animation: none; }.dashboard-stat-card { transition: none; } }
