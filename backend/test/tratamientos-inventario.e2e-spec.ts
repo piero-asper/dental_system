@@ -29,15 +29,15 @@ describe('Tratamientos e inventario HTTP', () => {
   afterEach(() => fetchMock.mockRestore()); afterAll(async () => app.close());
   const api = () => request(app.getHttpServer());
   const id = randomUUID(), version = new Date().toISOString();
-  const valid = { codigo: ' TR-1 ', nombre: ' Limpieza ', precioBase: '100.50' };
+  const valid = { nombre: ' Limpieza ', precioBase: '100.50' };
   const presupuesto = { pacienteId: id, items: [{ tratamientoId: id, precioUnitario: '100', cantidad: 1 }], descuento: '0' };
   it.each(['/tratamientos', '/presupuestos', '/inventario', `/inventario/${id}/movimientos`])('exige autenticación para leer y escribir %s', async (path) => {
     await api().get(`/api${path}`).expect(401); await api().post(`/api${path}`).send({}).expect(401);
     expect(tratamientos.crear).not.toHaveBeenCalled(); expect(inventario.movimiento).not.toHaveBeenCalled();
   });
-  it('normaliza el código y conserva el importe decimal como texto', async () => {
+  it('normaliza el nombre y conserva el importe decimal como texto', async () => {
     await api().post('/api/tratamientos').auth('token', { type: 'bearer' }).send(valid).expect(201);
-    expect(tratamientos.crear).toHaveBeenCalledWith(expect.objectContaining({ codigo: 'TR-1', nombre: 'Limpieza', precioBase: '100.50' }));
+    expect(tratamientos.crear).toHaveBeenCalledWith(expect.objectContaining({ nombre: 'Limpieza', precioBase: '100.50' }));
   });
   it.each([{ precioBase: 1.25 }, { precioBase: '-1' }, { precioBase: '1.001' }, { precioBase: '1e3' }, { precioBase: null }, { activo: null }, { nombre: ' ' }, { codigo: 'x y' }])('rechaza datos de catálogo inválidos %s', async (data) => {
     await api().post('/api/tratamientos').auth('token', { type: 'bearer' }).send({ ...valid, ...data }).expect(400);
