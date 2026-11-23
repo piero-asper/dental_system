@@ -56,7 +56,7 @@ export function LoginPage() {
           <input id="email" name="email" type="email" autoComplete="username" required autoFocus placeholder="usuario o nombre@clinica.com"
             value={email} onChange={(event) => { setEmail(event.target.value); setDismissedError(null); }} disabled={submitting} /></span></label>
         <label className="login-field" htmlFor="password"><span>Contraseña</span><span className="login-input"><LockKeyhole size={18} aria-hidden="true" />
-          <input id="password" name="password" type={passwordVisible ? 'text' : 'password'} autoComplete="current-password" required placeholder="Tu contraseña"
+          <input id="password" name="password" type={passwordVisible ? 'text' : 'password'} autoComplete="current-password" required placeholder="Ingresa tu contraseña"
             value={password} onChange={(event) => { setPassword(event.target.value); setDismissedError(null); }} disabled={submitting} />
           <button type="button" className="password-visibility" onClick={() => setPasswordVisible((visible) => !visible)} disabled={submitting}
             aria-label={passwordVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'}>{passwordVisible ? <EyeOff size={18} /> : <Eye size={18} />}</button></span></label>
