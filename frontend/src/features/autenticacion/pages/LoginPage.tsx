@@ -53,7 +53,7 @@ export function LoginPage() {
   >
       <form className="login-form" onSubmit={(event) => { void handleSubmit(event); }} aria-busy={submitting}>
         <label className="login-field login-user-field" htmlFor="email"><span>Usuario o correo electrónico</span><span className="login-input"><Mail size={18} aria-hidden="true" />
-          <input id="email" name="email" type="email" autoComplete="username" required autoFocus placeholder="Ingresa tu usuario o correo electrónico"
+          <input id="email" name="email" type="email" autoComplete="username" required autoFocus placeholder="usuario o nombre@clinica.com"
             value={email} onChange={(event) => { setEmail(event.target.value); setDismissedError(null); }} disabled={submitting} /></span></label>
         <label className="login-field" htmlFor="password"><span>Contraseña</span><span className="login-input"><LockKeyhole size={18} aria-hidden="true" />
           <input id="password" name="password" type={passwordVisible ? 'text' : 'password'} autoComplete="current-password" required placeholder="Tu contraseña"
