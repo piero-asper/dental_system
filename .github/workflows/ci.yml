@@ -55,6 +55,19 @@ jobs:
       - name: Generate Prisma client
         run: npm run prisma:generate
 
+      - name: Prepare Supabase-compatible test database
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql --host localhost --username postgres --dbname dental_test --set ON_ERROR_STOP=1 <<'SQL'
+          CREATE ROLE anon;
+          CREATE ROLE authenticated;
+          CREATE SCHEMA auth;
+          CREATE FUNCTION auth.uid() RETURNS uuid
+            LANGUAGE sql STABLE
+            AS 'SELECT NULL::uuid';
+          SQL
+
       - name: Apply database migrations
         run: npm run prisma:deploy
 
