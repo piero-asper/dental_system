@@ -55,7 +55,7 @@ describe('flujo de autenticacion', () => {
     start();
     await screen.findByRole('button', { name: 'Iniciar sesión' });
     expect(screen.queryByText('Pacientes privados')).toBeNull();
-    fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'clinica@example.com' } });
+    fireEvent.change(screen.getByLabelText('Usuario o correo electrónico'), { target: { value: 'clinica@example.com' } });
     fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'example-password' } });
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
     await screen.findByText('Pacientes privados');
@@ -67,8 +67,8 @@ describe('flujo de autenticacion', () => {
   it('muestra error de credenciales y mantiene el acceso cerrado', async () => {
     mocks.signIn.mockResolvedValue({ error: { status: 400 } });
     start('/login');
-    await screen.findByLabelText('Correo electrónico');
-    fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'wrong@example.com' } });
+    await screen.findByLabelText('Usuario o correo electrónico');
+    fireEvent.change(screen.getByLabelText('Usuario o correo electrónico'), { target: { value: 'wrong@example.com' } });
     fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'wrong' } });
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
     expect((await screen.findByRole('alert')).textContent).toContain('No se pudo iniciar sesión');
