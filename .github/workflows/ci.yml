@@ -16,6 +16,27 @@ jobs:
   backend:
     name: Backend
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: dental_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd "pg_isready -U postgres -d dental_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/dental_test?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/dental_test?schema=public
+      SUPABASE_URL: https://example.supabase.co
+      SUPABASE_SERVICE_ROLE_KEY: ci-test-key
+      CORS_ORIGIN: http://localhost:5173
     defaults:
       run:
         working-directory: backend
@@ -33,6 +54,9 @@ jobs:
 
       - name: Generate Prisma client
         run: npm run prisma:generate
+
+      - name: Apply database migrations
+        run: npm run prisma:deploy
 
       - name: Run tests
         run: npm test -- --runInBand
