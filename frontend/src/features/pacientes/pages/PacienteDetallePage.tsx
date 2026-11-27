@@ -23,7 +23,7 @@ export function PacienteDetallePage() {
       </header>
       {location.state?.saved && <p className="success-message" role="status">Los datos del paciente se guardaron correctamente.</p>}
       <div className="patient-details surface">
-        <section><h2>Datos de contacto</h2><dl className="details-grid"><div><dt>Teléfono</dt><dd>{paciente.telefono || 'Sin registrar'}</dd></div></dl></section>
+        <section><h2>Datos personales y de contacto</h2><dl className="details-grid"><div><dt>Género</dt><dd>{paciente.sexo === 'MASCULINO' ? 'Masculino' : paciente.sexo === 'FEMENINO' ? 'Femenino' : 'Sin registrar'}</dd></div><div><dt>Teléfono</dt><dd>{paciente.telefono || 'Sin registrar'}</dd></div></dl></section>
         <section><h2>Registro</h2><dl className="details-grid"><div><dt>Fecha de registro</dt><dd><time dateTime={paciente.createdAt}>{formatDate(paciente.createdAt)}</time></dd></div></dl></section>
       </div>
       <PacienteResumen id={paciente.id}/>

@@ -37,6 +37,7 @@ function start(path = '/pacientes') {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  window.localStorage.clear();
   mocks.getSession.mockResolvedValue({ data: { session: null }, error: null });
   mocks.onAuthStateChange.mockImplementation((callback) => {
     emit = callback;
@@ -73,6 +74,16 @@ describe('flujo de autenticacion', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
     expect((await screen.findByRole('alert')).textContent).toContain('No se pudo iniciar sesión');
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('recuerda el correo al marcar la opción y lo elimina al desmarcarla', async () => {
+    start('/login');
+    const email = await screen.findByLabelText('Usuario o correo electrónico');
+    fireEvent.change(email, { target: { value: 'clinica@example.com' } });
+    fireEvent.click(screen.getByLabelText('Recordar usuario'));
+    await waitFor(() => expect(window.localStorage.getItem('dental-system.remembered-email')).toBe('clinica@example.com'));
+    fireEvent.click(screen.getByLabelText('Recordar usuario'));
+    await waitFor(() => expect(window.localStorage.getItem('dental-system.remembered-email')).toBeNull());
   });
 
   it('restaura sesion, verifica en backend y borra cache al cerrar sesion', async () => {

@@ -90,21 +90,35 @@ describe('gestion de pacientes', () => {
     await waitFor(() => expect((screen.getByRole('searchbox') as HTMLInputElement).value).toBe(''));
   });
 
-  it('registra y abre la ficha usando solo nombres y apellidos', async () => {
+  it('abre una ficha flotante y el editor desde las acciones de la lista', async () => {
+    start();
+    await screen.findByText('Torres Rojas, Lucia');
+    fireEvent.click(screen.getByRole('button', { name: 'Ver ficha de Lucia Torres Rojas' }));
+    expect(screen.getByRole('dialog', { name: 'Lucia Torres Rojas' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Editar paciente' }));
+    expect(screen.getByRole('dialog', { name: 'Editar paciente' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Eliminar ficha/ })).toBeNull();
+  });
+
+  it('registra un paciente desde un modal sin salir de la lista', async () => {
     records = [];
     start();
     await screen.findByText('Aún no hay pacientes');
-    fireEvent.click(screen.getByRole('link', { name: 'Nuevo paciente' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Nuevo paciente' }));
+    expect(screen.getByRole('dialog', { name: 'Registrar paciente' })).toBeTruthy();
     for (const label of [/DNI/i, /Fecha de nacimiento/i, /Sexo/i, /Correo/i, /Dirección/i, /emergencia/i]) {
       expect(screen.queryByLabelText(label)).toBeNull();
     }
     fireEvent.change(screen.getByLabelText('Nombres *'), { target: { value: 'Ana' } });
     fireEvent.change(screen.getByLabelText('Apellidos *'), { target: { value: 'Perez' } });
+    fireEvent.change(screen.getByLabelText('Género'), { target: { value: 'FEMENINO' } });
     fireEvent.click(screen.getByRole('button', { name: 'Guardar paciente' }));
-    await screen.findByRole('heading', { name: 'Ana Perez' });
-    expect(records[0]).toMatchObject({ nombres: 'Ana', apellidos: 'Perez', telefono: null });
+    await screen.findByText('Ana Perez se registró correctamente.');
+    expect(screen.queryByRole('dialog', { name: 'Registrar paciente' })).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Pacientes', exact: true })).toBeTruthy();
+    expect(records[0]).toMatchObject({ nombres: 'Ana', apellidos: 'Perez', telefono: null, sexo: 'FEMENINO' });
     expect(mocks.apiClient).toHaveBeenCalledWith('/pacientes', expect.objectContaining({
-      body: JSON.stringify({ nombres: 'Ana', apellidos: 'Perez', telefono: null, activo: true })
+      body: JSON.stringify({ nombres: 'Ana', apellidos: 'Perez', telefono: null, sexo: 'FEMENINO', activo: true })
     }));
   });
 
@@ -120,16 +134,13 @@ describe('gestion de pacientes', () => {
 
   it('edita, limpia un campo opcional y desactiva sin borrar la ficha', async () => {
     start('/pacientes?q=Lucia&estado=activos');
-    await screen.findByRole('link', { name: 'Ver ficha de Lucia Torres Rojas' });
-    fireEvent.click(screen.getByRole('link', { name: 'Ver ficha de Lucia Torres Rojas' }));
-    await screen.findByRole('heading', { name: 'Lucia Torres Rojas' });
-    fireEvent.click(screen.getByRole('link', { name: 'Editar paciente' }));
+    await screen.findByRole('button', { name: 'Editar ficha de Lucia Torres Rojas' });
+    fireEvent.click(screen.getByRole('button', { name: 'Editar ficha de Lucia Torres Rojas' }));
     await screen.findByRole('button', { name: 'Guardar cambios' });
     fireEvent.change(screen.getByLabelText('Teléfono', { exact: true }), { target: { value: '' } });
     fireEvent.click(screen.getByLabelText('Paciente activo'));
     fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
-    await screen.findByRole('heading', { name: 'Pacientes', exact: true });
-    expect(screen.getByText('Los cambios del paciente se guardaron correctamente.')).toBeTruthy();
+    await screen.findByText('Se actualizó correctamente.');
     expect((screen.getByRole('searchbox') as HTMLInputElement).value).toBe('Lucia');
     expect((screen.getByLabelText('Estado') as HTMLSelectElement).value).toBe('activos');
     await screen.findByText('Sin teléfono');
@@ -158,7 +169,7 @@ describe('gestion de pacientes', () => {
     await waitFor(() => expect(mocks.apiClient).toHaveBeenCalledWith('/pacientes?q=Lucia&estado=activos&pagina=1&tamanoPagina=20&orden=desc', expect.anything()));
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
     await screen.findByText('Página 2 de 2');
-    fireEvent.click(screen.getByRole('link', { name: 'Ver ficha de Lucia Torres Rojas' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Torres Rojas, Lucia' }));
     await screen.findByRole('heading', { name: 'Lucia Torres Rojas' });
     fireEvent.click(screen.getByRole('link', { name: '← Volver a pacientes' }));
     await screen.findByText('Página 2 de 2');
@@ -173,14 +184,10 @@ describe('gestion de pacientes', () => {
 
   it('conserva los filtros al cancelar la edicion de una ficha', async () => {
     start('/pacientes?q=Lucia&estado=activos');
-    await screen.findByRole('link', { name: 'Ver ficha de Lucia Torres Rojas' });
-    fireEvent.click(screen.getByRole('link', { name: 'Ver ficha de Lucia Torres Rojas' }));
-    await screen.findByRole('link', { name: 'Editar paciente' });
-    fireEvent.click(screen.getByRole('link', { name: 'Editar paciente' }));
+    await screen.findByRole('button', { name: 'Editar ficha de Lucia Torres Rojas' });
+    fireEvent.click(screen.getByRole('button', { name: 'Editar ficha de Lucia Torres Rojas' }));
     await screen.findByRole('button', { name: 'Guardar cambios' });
-    fireEvent.click(screen.getByRole('link', { name: 'Cancelar' }));
-    await screen.findByRole('link', { name: '← Volver a pacientes' });
-    fireEvent.click(screen.getByRole('link', { name: '← Volver a pacientes' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
     await screen.findByRole('searchbox');
     expect((screen.getByRole('searchbox') as HTMLInputElement).value).toBe('Lucia');
     expect((screen.getByLabelText('Estado') as HTMLSelectElement).value).toBe('activos');

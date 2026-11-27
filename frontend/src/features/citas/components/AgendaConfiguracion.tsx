@@ -5,9 +5,9 @@ import { addDays,clinicDate,clinicISO,errorMessage,formatDate,formatDateTime } f
 import { RequestError } from '@/shared/components/RequestError';
 import { UnsavedChanges } from '@/shared/components/UnsavedChanges';
 const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-export function AgendaConfiguracion(){
+export function AgendaConfiguracion({ embedded = false }: { embedded?: boolean }){
   const query=useQuery({queryKey:['agenda-configuracion'],queryFn:agendaApi.configuracion,retry:false,refetchOnWindowFocus:false,refetchOnReconnect:false});
-  return <section className="surface patient-form"><h2>Configurar agenda</h2>{query.isPending&&<p>Cargando configuración…</p>}{query.isError&&<RequestError error={query.error} retry={()=>void query.refetch()}/>} {query.data&&<HorarioForm key={query.data[0]?.id??'nuevo'} actual={query.data[0]}/>}
+  return <section className={embedded ? 'patient-form agenda-config-form' : 'surface patient-form'}>{!embedded&&<h2>Configurar agenda</h2>}{query.isPending&&<p>Cargando configuración…</p>}{query.isError&&<RequestError error={query.error} retry={()=>void query.refetch()}/>} {query.data&&<HorarioForm key={query.data[0]?.id??'nuevo'} actual={query.data[0]}/>}
     {!!query.data?.length&&<details><summary>Historial de horarios ({query.data.length})</summary>{query.data.map((v)=><p key={v.id}>Vigente desde {formatDate(`${v.vigenteDesde.slice(0,10)}T12:00:00-05:00`)} · {v.intervalos.length} franjas semanales</p>)}</details>}
     <Bloqueos/>
   </section>;
@@ -18,7 +18,7 @@ function HorarioForm({actual}:{actual?:{vigenteDesde:string;intervalos:Franja[]}
   const [desdeInicial]=useState(desde);
   const mutation=useMutation({mutationFn:()=>agendaApi.guardar(desde,intervalos),onSuccess:async()=>{await client.invalidateQueries({queryKey:['agenda-configuracion']});await client.invalidateQueries({queryKey:['disponibilidad']});}});
   return <form onSubmit={(e)=>{e.preventDefault();mutation.mutate();}}><UnsavedChanges dirty={(desde!==desdeInicial||JSON.stringify(intervalos)!==JSON.stringify(inicial))&&!mutation.isPending&&!mutation.isSuccess}/>
-    {!actual&&<p className="notice-warning">Este horario es una propuesta editable. No se aplica hasta guardarlo. Sin configuración no se ofrecen reservas.</p>}
+    {!actual&&<p className="notice-warning">Este horario es una propuesta editable. No se aplica hasta guardarlo y solo se usa para sugerir franjas disponibles.</p>}
     <label>Vigente desde<input type="date" required min={actual?addDays(clinicDate(),1):clinicDate()} value={desde} onChange={(e)=>setDesde(e.target.value)}/></label>
     <div className="schedule-editor">{[1,2,3,4,5,6,0].map((dia)=><section key={dia}><strong>{dias[dia]}</strong>{intervalos.map((f,index)=>f.dia===dia&&<div className="inline-actions" key={index}><label>Desde<input type="time" required value={f.inicio} onChange={(e)=>setIntervalos(intervalos.map((i,n)=>n===index?{...i,inicio:e.target.value}:i))}/></label><label>Hasta<input type="time" required value={f.fin} onChange={(e)=>setIntervalos(intervalos.map((i,n)=>n===index?{...i,fin:e.target.value}:i))}/></label><button className="text-link" type="button" onClick={()=>setIntervalos(intervalos.filter((_,n)=>n!==index))}>Quitar franja</button></div>)}{!intervalos.some((i)=>i.dia===dia)&&<span className="field-hint">Cerrado</span>}<button type="button" className="text-link" onClick={()=>setIntervalos([...intervalos,{dia,inicio:'09:00',fin:'13:00'}])}>Añadir franja</button></section>)}</div>
     {mutation.isError&&<RequestError error={mutation.error}/>}<div className="form-actions"><button className="primary-button" disabled={mutation.isPending}>{mutation.isPending?'Guardando…':'Guardar horario'}</button></div>

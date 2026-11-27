@@ -21,7 +21,6 @@ export class CitasService {
       const paciente = await this.repository.paciente(tx, dto.pacienteId);
       if (!paciente) throw new NotFoundException('No se encontro el paciente.');
       if (!paciente.activo) throw new BadRequestException('Activa al paciente antes de reservar una cita.');
-      if (!await this.repository.admite(tx,inicio,fin)) throw new BadRequestException('El horario no está disponible. Configura el horario de atención o selecciona una franja libre.');
       if (await this.repository.cruce(tx, inicio, fin)) throw new ConflictException('El horario se cruza con otra cita.');
       return this.repository.crear(tx, { ...dto, huellaSolicitud: dto.claveSolicitud ? huellaSolicitud : null, fechaInicio: inicio, fechaFin: fin });
     }, actor);
@@ -32,7 +31,6 @@ export class CitasService {
       const cita = this.existe(await this.repository.buscar(tx, id)); this.version(cita, dto.version); this.pendiente(cita);
       const paciente = await this.repository.paciente(tx, cita.pacienteId);
       if (!paciente?.activo) throw new BadRequestException('Activa al paciente antes de reprogramar.');
-      if (!await this.repository.admite(tx,inicio,fin)) throw new BadRequestException('El horario está fuera de la atención o tiene un bloqueo.');
       if (await this.repository.cruce(tx, inicio, fin, id)) throw new ConflictException('El horario se cruza con otra cita.');
       return this.repository.editar(tx, id, { fechaInicio: inicio, fechaFin: fin });
     }, actor);

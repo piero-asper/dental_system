@@ -6,16 +6,16 @@ import { Link } from 'react-router-dom';
 import { mensajeError, Paciente, PacienteInput } from '../api/pacientesApi';
 
 type FormValues = {
-  nombres: string; apellidos: string; telefono: string; activo: boolean;
+  nombres: string; apellidos: string; telefono: string; sexo: '' | 'MASCULINO' | 'FEMENINO'; activo: boolean;
 };
 
-export function PacienteForm({ paciente, cancelTo, cancelState, onSave }: {
-  paciente?: Paciente; cancelTo: string; cancelState?: { listSearch: string }; onSave: (data: PacienteInput, version?: string) => Promise<void>;
+export function PacienteForm({ paciente, cancelTo, cancelState, onCancel, onSave }: {
+  paciente?: Paciente; cancelTo?: string; cancelState?: { listSearch: string }; onCancel?: () => void; onSave: (data: PacienteInput, version?: string) => Promise<void>;
 }) {
   const [original] = useState(paciente);
   const [values, setValues] = useState<FormValues>({
     nombres: paciente?.nombres ?? '',
-    apellidos: paciente?.apellidos ?? '', telefono: paciente?.telefono ?? '',
+    apellidos: paciente?.apellidos ?? '', telefono: paciente?.telefono ?? '', sexo: paciente?.sexo ?? '',
     activo: paciente?.activo ?? true
   });
   const [saving, setSaving] = useState(false);
@@ -27,7 +27,7 @@ export function PacienteForm({ paciente, cancelTo, cancelState, onSave }: {
     const results=await Promise.all(terms.map((q)=>apiClient<Paciente[]>(`/pacientes/coincidencias?q=${encodeURIComponent(q)}`)));
     return [...new Map(results.flat().map((p)=>[p.id,p])).values()];
   },retry:false});
-  const dirty=JSON.stringify(values)!==JSON.stringify({nombres:original?.nombres??'',apellidos:original?.apellidos??'',telefono:original?.telefono??'',activo:original?.activo??true});
+  const dirty=JSON.stringify(values)!==JSON.stringify({nombres:original?.nombres??'',apellidos:original?.apellidos??'',telefono:original?.telefono??'',sexo:original?.sexo??'',activo:original?.activo??true});
 
   function change(name: keyof FormValues, value: string | boolean) {
     setValues((current) => ({ ...current, [name]: value }));
@@ -44,7 +44,7 @@ export function PacienteForm({ paciente, cancelTo, cancelState, onSave }: {
     try {
       const optional = (value: string) => value.trim() || null;
       await onSave({ ...values, nombres: values.nombres.trim(), apellidos: values.apellidos.trim(),
-        telefono: optional(values.telefono) }, original?.updatedAt);
+        telefono: optional(values.telefono), sexo: values.sexo || null }, original?.updatedAt);
     } catch (cause) { setError(mensajeError(cause)); }
     finally { setSaving(false); }
   }
@@ -59,6 +59,7 @@ export function PacienteForm({ paciente, cancelTo, cancelState, onSave }: {
       <div className="form-grid">
         <label>Nombres *<input name="nombres" autoComplete="given-name" required autoFocus maxLength={100} value={values.nombres} onChange={(event) => change('nombres', event.target.value)} /></label>
         <label>Apellidos *<input name="apellidos" autoComplete="family-name" required maxLength={100} value={values.apellidos} onChange={(event) => change('apellidos', event.target.value)} /></label>
+        <label>Género<select name="sexo" value={values.sexo} onChange={(event) => change('sexo', event.target.value as FormValues['sexo'])}><option value="">Selecciona una opción</option><option value="MASCULINO">Masculino</option><option value="FEMENINO">Femenino</option></select></label>
       </div>
     </fieldset>
     <fieldset disabled={saving}>
@@ -72,7 +73,7 @@ export function PacienteForm({ paciente, cancelTo, cancelState, onSave }: {
     {error && <p className="form-error" role="alert">{error}</p>}
     <div className="form-actions">
       <button className="primary-button" type="submit" disabled={saving}>{saving ? 'Guardando…' : paciente ? 'Guardar cambios' : 'Guardar paciente'}</button>
-      {!saving && <Link className="secondary-button" to={cancelTo} state={cancelState}>Cancelar</Link>}
+      {!saving && (onCancel ? <button className="secondary-button" type="button" onClick={onCancel}>Cancelar</button> : <Link className="secondary-button" to={cancelTo!} state={cancelState}>Cancelar</Link>)}
     </div>
   </form>;
 }

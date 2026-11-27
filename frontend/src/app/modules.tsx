@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 import type { RouteObject } from 'react-router-dom';
-import { CalendarDays, ClipboardList, FileBarChart, LayoutDashboard, Package, Stethoscope, UserRound, WalletCards } from 'lucide-react';
+import { CalendarDays, ClipboardList, FileBarChart, LayoutDashboard, Package, Settings, Stethoscope, UserRound, WalletCards } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { PacientesPage } from '@/features/pacientes/pages/PacientesPage';
 import { CitasPage } from '@/features/citas/pages/CitasPage';
@@ -10,6 +10,7 @@ import { InventarioPage } from '@/features/inventario/pages/InventarioPage';
 import { PagosPage } from '@/features/pagos/pages/PagosPage';
 import { ModulePlaceholder } from '@/shared/components/ModulePlaceholder';
 import { PanelPage,ReportesPage } from '@/features/bi/pages/BiPage';
+import { AgendaConfiguracionPage } from '@/features/citas/pages/AgendaConfiguracionPage';
 
 export type ModuleDefinition = {
   path: string;
@@ -30,7 +31,8 @@ export const modules: readonly ModuleDefinition[] = [
   { path: 'tratamientos', title: 'Tratamientos', description: 'Catálogo, precios y presupuestos por paciente.', icon: Stethoscope, Page: TratamientosPage },
   { path: 'pagos', title: 'Pagos', description: 'Abonos, saldos, recibos internos y caja.', icon: WalletCards, Page: PagosPage },
   { path: 'inventario', title: 'Inventario', description: 'Insumos, existencias e historial de movimientos.', icon: Package, Page: InventarioPage },
-  { path: 'reportes', title: 'Reportes', description: 'Indicadores y exportación de datos operativos y de caja.', icon: FileBarChart,Page:ReportesPage }
+  { path: 'reportes', title: 'Reportes', description: 'Indicadores y exportación de datos operativos y de caja.', icon: FileBarChart,Page:ReportesPage },
+  { path: 'configuracion', title: 'Configuración', description: 'Horario sugerido de atención y bloqueos de la clínica.', icon: Settings, Page: AgendaConfiguracionPage, section: 'Configuración' }
 ];
 
 export function createModuleRoutes(definitions: readonly ModuleDefinition[]): RouteObject[] {

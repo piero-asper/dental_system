@@ -13,7 +13,7 @@ vi.mock('@/shared/lib/supabaseClient', () => ({ supabase: null }));
 const patient = { id: 'patient', nombres: 'Lucia', apellidos: 'Torres', activo: true, telefono: '999111222' };
 let records: Cita[], conflict = false;
 const today = clinicDate();
-function start(calendar=false) { const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } }); render(<QueryClientProvider client={client}><MemoryRouter><CitasPage /></MemoryRouter></QueryClientProvider>);if(!calendar)fireEvent.change(screen.getByLabelText('Formato'),{target:{value:'lista'}}); }
+function start(calendar=false) { const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } }); render(<QueryClientProvider client={client}><MemoryRouter><CitasPage /></MemoryRouter></QueryClientProvider>);fireEvent.change(screen.getByLabelText('Vista'),{target:{value:calendar?'calendario':'lista'}}); }
 beforeEach(() => {
   records = []; conflict = false; mocks.apiClient.mockReset();
   mocks.apiClient.mockImplementation(async (path: string, options?: RequestInit) => {
@@ -29,8 +29,8 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 async function fillReservation() {
-  fireEvent.click(screen.getByRole('button', { name: 'Reservar cita' }));
-  fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Lucia' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Nueva cita' }));
+  fireEvent.change(screen.getByLabelText('Buscar paciente'), { target: { value: 'Lucia' } });
   fireEvent.click(await screen.findByRole('button', { name: /Torres, Lucia/ }, { timeout: 3000 }));
   fireEvent.change(screen.getByLabelText('Motivo'), { target: { value: 'Control' } });
 }
@@ -39,7 +39,7 @@ describe('agenda', () => {
     const first=agendaRange(today,true).first;
     records=[{id:'medianoche',pacienteId:patient.id,paciente:patient,fechaInicio:clinicISO(`${first}T23:30`),fechaFin:clinicISO(`${addDays(first,1)}T00:00`),estado:'ATENDIDA',motivo:'Control',notas:null,motivoCancelacion:null,updatedAt:'2026-01-01T00:00:00Z'}];
     start(true);
-    fireEvent.change(screen.getByLabelText('Vista'),{target:{value:'semana'}});
+    fireEvent.change(screen.getByLabelText('Periodo'),{target:{value:'semana'}});
     await waitFor(()=>expect(document.querySelectorAll('.calendar-appointment')).toHaveLength(1));
   });
   it('conserva las canceladas sin tapar el horario de una reserva vigente',async()=>{
@@ -51,9 +51,9 @@ describe('agenda', () => {
     fireEvent.click(screen.getByRole('button',{name:/Torres, Lucia · Cancelada/}));
     await screen.findByRole('button',{name:'Cerrar detalle'});
   });
-  it('muestra agenda vacia y consulta la semana con limites de Colombia', async () => { start(); await screen.findByText('Sin citas.'); fireEvent.change(screen.getByLabelText('Vista'), { target: { value: 'semana' } }); const range = agendaRange(today, true); await waitFor(() => expect(mocks.apiClient.mock.calls.some(([path]) => { const url = new URL(path, 'http://test'); return url.pathname === '/citas' && url.searchParams.get('desde') === range.desde && url.searchParams.get('hasta') === range.hasta; })).toBe(true)); });
+  it('muestra agenda vacia y consulta la semana con limites de Colombia', async () => { start(); await screen.findByText('Sin citas.'); fireEvent.change(screen.getByLabelText('Periodo'), { target: { value: 'semana' } }); const range = agendaRange(today, true); await waitFor(() => expect(mocks.apiClient.mock.calls.some(([path]) => { const url = new URL(path, 'http://test'); return url.pathname === '/citas' && url.searchParams.get('desde') === range.desde && url.searchParams.get('hasta') === range.hasta; })).toBe(true)); });
   it('reserva buscando un paciente y convierte las horas a UTC', async () => { start(); await fillReservation(); fireEvent.click(screen.getByRole('button', { name: 'Reservar', exact: true })); await screen.findByText('Cita reservada.'); expect(records[0]).toMatchObject({ pacienteId: patient.id, motivo: 'Control', fechaInicio: clinicISO(`${today}T09:00`) }); expect(screen.getByRole('link', { name: 'Historia clínica' }).getAttribute('href')).toContain('pacienteId=patient'); });
-  it('conserva el formulario ante un conflicto de horario', async () => { conflict = true; start(); await fillReservation(); fireEvent.click(screen.getByRole('button', { name: 'Reservar', exact: true })); await screen.findByRole('alert'); expect(screen.getByRole('alert').textContent).toContain('se cruza'); expect((screen.getByLabelText('Motivo') as HTMLInputElement).value).toBe('Control'); expect(records).toHaveLength(0); });
+  it('conserva el formulario y muestra una alerta flotante ante un conflicto de horario', async () => { conflict = true; start(); await fillReservation(); fireEvent.click(screen.getByRole('button', { name: 'Reservar', exact: true })); await screen.findByText('Hay un conflicto en el horario.'); expect(screen.getByText('El horario se cruza con otra cita.')).toBeDefined(); expect((screen.getByLabelText('Motivo') as HTMLInputElement).value).toBe('Control'); expect(records).toHaveLength(0); });
   it('reprograma con version y cancela con motivo', async () => {
     records = [{ id: 'cita', pacienteId: patient.id, paciente: patient, fechaInicio: clinicISO(`${today}T09:00`), fechaFin: clinicISO(`${today}T09:30`), estado: 'PROGRAMADA', motivo: 'Control', notas: null, motivoCancelacion: null, updatedAt: '2026-01-01T00:00:00Z' }];
     start(); fireEvent.click(await screen.findByRole('button', { name: 'Reprogramar' })); fireEvent.change(screen.getByLabelText('Fin'), { target: { value: `${today}T10:00` } }); fireEvent.click(screen.getByRole('button', { name: 'Guardar horario' })); await screen.findByText('Cita reprogramada.'); expect(mocks.apiClient.mock.calls.find(([path]) => path.endsWith('/horario'))?.[1]?.body).toContain('"version":"2026-01-01T00:00:00Z"');

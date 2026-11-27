@@ -171,6 +171,8 @@ Tambien se recomienda proteger `develop` para evitar commits directos y mantener
 - `NODE_ENV`
 - `CORS_ORIGIN`
 
+En desarrollo local, `CORS_ORIGIN` admite una lista de orígenes separada por comas: `http://localhost:5173,http://127.0.0.1:5173`. En producción debe contener únicamente el dominio público exacto del frontend.
+
 ### Frontend
 - `VITE_API_URL`
 - `VITE_SUPABASE_URL`

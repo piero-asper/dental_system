@@ -1,8 +1,7 @@
 import { ChevronRight, LogOut, UserRound } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { useContext, useEffect, useRef, useState } from 'react';
-import { QueryClientContext, useIsFetching } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { confirmDiscard, UnsavedNavigation } from './UnsavedChanges';
 import { BrandLogo } from './BrandLogo';
@@ -17,10 +16,14 @@ export function AppShell({ navigation }: { navigation: readonly NavigationItem[]
   const isDashboard = useLocation().pathname === '/panel';
   const [closing, setClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const navigationSource = useRef<'sidebar' | 'internal'>('sidebar');
-  const previousPath = useRef(location.pathname);
+  const [initialLoading, setInitialLoading] = useState(true);
   const sections = [...new Set(navigation.map((item) => item.section ?? 'Gestión clínica'))];
   const activeModule = [...navigation].sort((a, b) => b.to.length - a.to.length).find((item) => location.pathname === item.to || location.pathname.startsWith(`${item.to}/`));
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setInitialLoading(false), 600);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   async function handleSignOut() {
     if(!confirmDiscard())return;
@@ -31,12 +34,6 @@ export function AppShell({ navigation }: { navigation: readonly NavigationItem[]
     finally { setClosing(false); }
   }
 
-  useEffect(() => {
-    if (previousPath.current === location.pathname) return;
-    previousPath.current = location.pathname;
-    navigationSource.current = 'sidebar';
-  }, [location.pathname]);
-
   if (closing) {
     return <SessionLoadingScreen
       title="Cerrando tu sesión"
@@ -45,11 +42,7 @@ export function AppShell({ navigation }: { navigation: readonly NavigationItem[]
   }
 
   return (
-    <div className={`app-shell dental-shell${isDashboard ? ' dashboard-shell' : ''}`} onClickCapture={(event) => {
-      const target = event.target instanceof Element ? event.target : null;
-      if (!target?.closest('a, button')) return;
-      navigationSource.current = target.closest('.sidebar') ? 'sidebar' : 'internal';
-    }}>
+    <div className={`app-shell dental-shell${isDashboard ? ' dashboard-shell' : ''}`}>
       <UnsavedNavigation />
       <aside className="sidebar" aria-label="Navegacion principal">
         <div className="brand"><BrandLogo inverse /></div>
@@ -81,44 +74,12 @@ export function AppShell({ navigation }: { navigation: readonly NavigationItem[]
           </div>
         </header>
         {error && <p className="form-error topbar-error" role="alert">{error}</p>}
-        <ModuleContent routeKey={location.pathname} moduleName={activeModule?.label ?? 'módulo'} showLoading={navigationSource.current === 'sidebar'} />
+        <div className={`module-outlet${initialLoading ? ' is-loading' : ''}`}>
+          <div className={`module-outlet-content${initialLoading ? ' is-loading' : ''}`}><Outlet /></div>
+          {initialLoading && <ModuleLoadingScreen moduleName="Dental System" />}
+        </div>
       </main>
     </div>
   );
-}
-
-function ModuleContent({ routeKey, moduleName, showLoading }: { routeKey: string; moduleName: string; showLoading: boolean }) {
-  const queryClient = useContext(QueryClientContext);
-  return queryClient ? <ModuleContentWithQueries routeKey={routeKey} moduleName={moduleName} showLoading={showLoading} /> : <ModuleContentFallback moduleName={moduleName} showLoading={showLoading} />;
-}
-
-function ModuleContentWithQueries({ routeKey, moduleName, showLoading }: { routeKey: string; moduleName: string; showLoading: boolean }) {
-  const fetching = useIsFetching();
-  const [loading, setLoading] = useState(showLoading);
-  const sawRequest = useRef(false);
-
-  useEffect(() => {
-    if (!showLoading) { sawRequest.current = false; setLoading(false); return; }
-    sawRequest.current = false;
-    setLoading(true);
-    const fallback = window.setTimeout(() => { if (!sawRequest.current) setLoading(false); }, 180);
-    return () => window.clearTimeout(fallback);
-  }, [routeKey, showLoading]);
-
-  useEffect(() => {
-    if (!showLoading) return;
-    if (fetching > 0) { sawRequest.current = true; setLoading(true); return; }
-    if (!sawRequest.current) return;
-    const complete = window.setTimeout(() => setLoading(false), 160);
-    return () => window.clearTimeout(complete);
-  }, [fetching, routeKey, showLoading]);
-
-  return <div className={`module-outlet${loading ? ' is-loading' : ''}`} aria-busy={loading}><div className={loading ? 'module-outlet-content is-loading' : 'module-outlet-content'}><Outlet /></div>{loading && <ModuleLoadingScreen moduleName={moduleName} />}</div>;
-}
-
-function ModuleContentFallback({ moduleName, showLoading }: { moduleName: string; showLoading: boolean }) {
-  const [loading, setLoading] = useState(showLoading);
-  useEffect(() => { if (!showLoading) { setLoading(false); return; } setLoading(true); const timer = window.setTimeout(() => setLoading(false), 180); return () => window.clearTimeout(timer); }, [showLoading]);
-  return <div className={`module-outlet${loading ? ' is-loading' : ''}`} aria-busy={loading}><div className={loading ? 'module-outlet-content is-loading' : 'module-outlet-content'}><Outlet /></div>{loading && <ModuleLoadingScreen moduleName={moduleName} />}</div>;
 }
 

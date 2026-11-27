@@ -1,17 +1,23 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, CircleX, Eye, EyeOff, LockKeyhole, Mail, X } from 'lucide-react';
 import { useAuth } from '@/shared/auth/AuthProvider';
 import { SessionStatus } from '@/shared/auth/ProtectedRoute';
 import { AuthLayout } from '../components/AuthLayout';
 
+const rememberedEmailKey = 'dental-system.remembered-email';
+
+function getRememberedEmail() {
+  if (typeof window === 'undefined') return '';
+  return window.localStorage.getItem(rememberedEmailKey) ?? '';
+}
+
 export function LoginPage() {
   const { session, user, loading, error, signIn } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const rememberedEmail = typeof window === 'undefined' ? null : window.localStorage.getItem('dental-system.remembered-email');
-  const [email, setEmail] = useState(rememberedEmail ?? '');
-  const [rememberUser, setRememberUser] = useState(Boolean(rememberedEmail));
+  const [email, setEmail] = useState(getRememberedEmail);
+  const [rememberUser, setRememberUser] = useState(() => Boolean(getRememberedEmail()));
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -23,6 +29,12 @@ export function LoginPage() {
   const loginError = formError ?? error;
   const visibleLoginError = loginError && loginError !== dismissedError ? loginError : null;
 
+  useEffect(() => {
+    const normalizedEmail = email.trim();
+    if (rememberUser && normalizedEmail) window.localStorage.setItem(rememberedEmailKey, normalizedEmail);
+    else window.localStorage.removeItem(rememberedEmailKey);
+  }, [email, rememberUser]);
+
   if (loading || (session && !user)) return <SessionStatus />;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -33,8 +45,6 @@ export function LoginPage() {
     setDismissedError(null);
     try {
       await signIn(email, password);
-      if (rememberUser) window.localStorage.setItem('dental-system.remembered-email', email.trim());
-      else window.localStorage.removeItem('dental-system.remembered-email');
       setPassword('');
       navigate(destination, { replace: true });
     } catch (cause) {
@@ -61,7 +71,7 @@ export function LoginPage() {
           <button type="button" className="password-visibility" onClick={() => setPasswordVisible((visible) => !visible)} disabled={submitting}
             aria-label={passwordVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'}>{passwordVisible ? <EyeOff size={18} /> : <Eye size={18} />}</button></span></label>
         <div className="login-form-options">
-          <label className="login-remember"><input type="checkbox" checked={rememberUser} onChange={(event) => { setRememberUser(event.target.checked); if (!event.target.checked) window.localStorage.removeItem('dental-system.remembered-email'); }} disabled={submitting} />Recordar usuario</label>
+          <label className="login-remember"><input type="checkbox" checked={rememberUser} onChange={(event) => { setRememberUser(event.target.checked); }} disabled={submitting} />Recordar usuario</label>
           <Link className="text-link" to="/recuperar-acceso">¿Olvidaste tu contraseña?</Link>
         </div>
         <button className="primary-button login-submit-button" type="submit" disabled={submitting}>

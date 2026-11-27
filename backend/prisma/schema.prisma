@@ -60,6 +60,7 @@ enum TipoMovimientoInventario {
 
 model Paciente {
   id                         String    @id @default(uuid()) @db.Uuid
+  codigo                     String    @unique
   tipoDocumento              String    @map("tipo_documento")
   numeroDocumento            String?   @map("numero_documento")
   nombres                    String
@@ -88,6 +89,7 @@ model Paciente {
 
 model Cita {
   id                 String     @id @default(uuid()) @db.Uuid
+  codigo             String     @unique
   pacienteId         String     @map("paciente_id") @db.Uuid
   fechaInicio        DateTime   @map("fecha_inicio") @db.Timestamptz(6)
   fechaFin           DateTime   @map("fecha_fin") @db.Timestamptz(6)

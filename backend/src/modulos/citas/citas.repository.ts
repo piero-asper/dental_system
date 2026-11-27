@@ -32,6 +32,10 @@ export class CitasRepository {
     return tx.cita.findFirst({ where: { deletedAt: null, id: excluir ? { not: excluir } : undefined,
       estado: { in: ['PROGRAMADA', 'CONFIRMADA', 'ATENDIDA'] }, fechaInicio: { lt: fin }, fechaFin: { gt: inicio } } });
   }
-  crear(tx: Prisma.TransactionClient, data: Prisma.CitaUncheckedCreateInput) { return tx.cita.create({ data, include }); }
+  async crear(tx: Prisma.TransactionClient, data: Omit<Prisma.CitaUncheckedCreateInput, 'codigo'>) {
+    const [secuencia] = await tx.$queryRaw<{ siguiente: number }[]>`SELECT COALESCE(MAX(((regexp_match(codigo, '^CIT-(\\d+)$'))[1])::int), 0) + 1 AS siguiente FROM citas`;
+    const codigo = `CIT-${String(secuencia.siguiente).padStart(4, '0')}`;
+    return tx.cita.create({ data: { ...data, codigo }, include });
+  }
   editar(tx: Prisma.TransactionClient, id: string, data: Prisma.CitaUpdateInput) { return tx.cita.update({ where: { id }, data, include }); }
 }

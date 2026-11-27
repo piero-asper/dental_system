@@ -9,9 +9,10 @@ type AuthLayoutProps = {
   children: ReactNode;
   footer?: ReactNode;
   loginNotice?: ReactNode;
+  panelClassName?: string;
 };
 
-export function AuthLayout({ eyebrow, title, description, children, footer, loginNotice }: AuthLayoutProps) {
+export function AuthLayout({ eyebrow, title, description, children, footer, loginNotice, panelClassName }: AuthLayoutProps) {
   return (
     <main className="login-page">
       <section className="auth-showcase" aria-label="Dental System">
@@ -25,7 +26,7 @@ export function AuthLayout({ eyebrow, title, description, children, footer, logi
           <aside className="auth-security-card"><span><ShieldCheck size={20} aria-hidden="true" /></span><div><strong>Información clínica segura</strong><p>Accede de forma protegida a los datos de tu clínica.</p></div></aside>
         </div>
       </section>
-      <section className="login-panel" aria-labelledby="login-title">
+      <section className={`login-panel ${panelClassName ?? ''}`.trim()} aria-labelledby="login-title">
         <div className="login-panel-heading">
           <p className="eyebrow">{eyebrow}</p>
           <h2 id="login-title">{title}</h2>

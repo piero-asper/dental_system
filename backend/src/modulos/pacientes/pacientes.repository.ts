@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { BuscarPacientesDto } from './dto/paciente.dto';
 import { inicioDia } from '../agenda/agenda.logic';
-export const pacienteSelect = { id: true, nombres: true, apellidos: true, telefono: true, activo: true, createdAt: true, updatedAt: true } satisfies Prisma.PacienteSelect;
+export const pacienteSelect = { id: true, codigo: true, nombres: true, apellidos: true, telefono: true, sexo: true, activo: true, createdAt: true, updatedAt: true } satisfies Prisma.PacienteSelect;
 type Patient = Prisma.PacienteGetPayload<{ select: typeof pacienteSelect }>;
 export const normalizar = (text: string) => text.toLocaleLowerCase('es').replace(/ñ/g,'n~').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 const nombreSQL = Prisma.sql`replace(translate(lower(p.apellidos || ' ' || p.nombres),'áéíóúü','aeiouu'),'ñ','n~')`;
@@ -17,7 +17,7 @@ export class PacientesRepository {
     const words=/^[+\d()\s.-]+$/.test(search)&&/\d/.test(search)?[search.replace(/\D/g,'')]:search.split(/\s+/).filter(Boolean);
     for (const word of words) {
       const escaped = '%' + normalizar(word).replace(/[\\%_]/g,'\\$&') + '%', digits = word.replace(/\D/g,'');
-      partes.push(Prisma.sql`(${nombreSQL} LIKE ${escaped} OR ${digits ? Prisma.sql`regexp_replace(COALESCE(p.telefono,''),'[^0-9]','','g') LIKE ${'%' + digits + '%'}` : Prisma.sql`false`})`);
+      partes.push(Prisma.sql`(${nombreSQL} LIKE ${escaped} OR p.codigo ILIKE ${escaped} OR ${digits ? Prisma.sql`regexp_replace(COALESCE(p.telefono,''),'[^0-9]','','g') LIKE ${'%' + digits + '%'}` : Prisma.sql`false`})`);
     }
     if (query.seguimiento === 'sin_historia') partes.push(Prisma.sql`NOT EXISTS(SELECT 1 FROM historias_clinicas h WHERE h.paciente_id=p.id)`);
     if (query.seguimiento === 'sin_proxima') partes.push(Prisma.sql`NOT EXISTS(SELECT 1 FROM citas c WHERE c.paciente_id=p.id AND c.deleted_at IS NULL AND c.estado IN ('PROGRAMADA','CONFIRMADA') AND c.fecha_inicio>now())`);
@@ -25,13 +25,18 @@ export class PacientesRepository {
     if (query.ultimaAntes) partes.push(Prisma.sql`(SELECT max(c.fecha_inicio) FROM citas c WHERE c.paciente_id=p.id AND c.deleted_at IS NULL AND c.estado='ATENDIDA') < ${query.ultimaAntes.length===10?inicioDia(query.ultimaAntes):new Date(query.ultimaAntes)}`);
     const where = Prisma.join(partes,' AND '), direction = Prisma.raw(query.orden === 'desc' ? 'DESC' : 'ASC');
     const [items, counts] = await this.prisma.$transaction([
-      this.prisma.$queryRaw<Patient[]>`SELECT p.id,p.nombres,p.apellidos,p.telefono,p.activo,p.created_at AS "createdAt",p.updated_at AS "updatedAt" FROM pacientes p WHERE ${where} ORDER BY ${nombreSQL} COLLATE "C" ${direction},p.id LIMIT ${query.tamanoPagina} OFFSET ${(query.pagina-1)*query.tamanoPagina}`,
+      this.prisma.$queryRaw<Patient[]>`SELECT p.id,p.codigo,p.nombres,p.apellidos,p.telefono,p.sexo,p.activo,p.created_at AS "createdAt",p.updated_at AS "updatedAt" FROM pacientes p WHERE ${where} ORDER BY ${nombreSQL} COLLATE "C" ${direction},p.id LIMIT ${query.tamanoPagina} OFFSET ${(query.pagina-1)*query.tamanoPagina}`,
       this.prisma.$queryRaw<{ total: bigint }[]>`SELECT count(*) AS total FROM pacientes p WHERE ${where}`
     ],{ isolationLevel: 'RepeatableRead' });
     return { items,total: Number(counts[0].total) };
   }
   buscarPorId(id: string) { return this.prisma.paciente.findFirst({ where: { id,deletedAt: null },select: pacienteSelect }); }
-  crear(data: Prisma.PacienteCreateInput) { return this.prisma.paciente.create({ data,select: pacienteSelect }); }
+  crear(data: Omit<Prisma.PacienteCreateInput, 'codigo'>) { return this.prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended('codigo:pacientes', 0))::text`;
+    const [secuencia] = await tx.$queryRaw<{ siguiente: number }[]>`SELECT COALESCE(MAX(((regexp_match(codigo, '^PAC-(\\d+)$'))[1])::int), 0) + 1 AS siguiente FROM pacientes`;
+    const codigo = `PAC-${String(secuencia.siguiente).padStart(4, '0')}`;
+    return tx.paciente.create({ data: { ...data, codigo },select: pacienteSelect });
+  }); }
   async editar(id: string,data: Prisma.PacienteUpdateInput,version?: string) {
     if (!version) return this.prisma.paciente.update({ where: { id,deletedAt: null },data,select: pacienteSelect });
     return this.prisma.$transaction(async(tx)=>{

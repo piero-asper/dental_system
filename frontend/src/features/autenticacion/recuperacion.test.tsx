@@ -15,13 +15,19 @@ describe('recuperación de contraseña', () => {
     fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'cuenta@example.test' } });
     fireEvent.click(screen.getByRole('button', { name: 'Enviar enlace de recuperación' }));
     await waitFor(() => expect(mocks.resetPasswordForEmail).toHaveBeenCalledWith('cuenta@example.test', { redirectTo: `${window.location.origin}/restablecer-contrasena` }));
-    expect(await screen.findByRole('status')).toHaveProperty('textContent', expect.stringContaining('Si el correo corresponde'));
+    expect(await screen.findByRole('status')).toHaveProperty('textContent', expect.stringContaining('Si la dirección corresponde'));
   });
   it('conserva el correo ante un fallo de conexión', async () => {
     mocks.resetPasswordForEmail.mockRejectedValue(new Error()); render(<MemoryRouter><RecuperarAccesoPage /></MemoryRouter>);
     fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'cuenta@example.test' } });
     fireEvent.click(screen.getByRole('button', { name: 'Enviar enlace de recuperación' })); await screen.findByRole('alert');
     expect(screen.getByLabelText('Correo electrónico')).toHaveProperty('value', 'cuenta@example.test');
+  });
+  it('explica cuándo Supabase limita temporalmente los envíos', async () => {
+    mocks.resetPasswordForEmail.mockResolvedValue({ error: { status: 429, message: 'email rate limit exceeded' } }); render(<MemoryRouter><RecuperarAccesoPage /></MemoryRouter>);
+    fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'cuenta@example.test' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar enlace de recuperación' }));
+    expect((await screen.findByRole('alert')).textContent).toContain('demasiados enlaces');
   });
   it('valida la confirmación antes de cambiar la contraseña', async () => {
     mocks.updateUser.mockResolvedValue({ error: null }); render(<MemoryRouter><RestablecerContrasenaPage /></MemoryRouter>);

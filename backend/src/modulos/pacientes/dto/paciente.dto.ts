@@ -24,6 +24,12 @@ export class CrearPacienteDto {
   @Matches(/^[+\d() .-]{5,30}$/, { message: 'El telefono debe tener entre 5 y 30 caracteres de numero telefonico.' })
   telefono?: string | null;
 
+  @ApiPropertyOptional({ enum: ['MASCULINO', 'FEMENINO'], nullable: true })
+  @Transform(nullableText)
+  @IsOptional()
+  @IsIn(['MASCULINO', 'FEMENINO'], { message: 'El género debe ser Masculino o Femenino.' })
+  sexo?: 'MASCULINO' | 'FEMENINO' | null;
+
   @ApiPropertyOptional({ default: true })
   @ValidateIf((_object, value) => value !== undefined)
   @IsBoolean({ message: 'El estado activo debe ser verdadero o falso.' })
